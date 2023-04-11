@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NYC Open Data Selector</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css"
+    integrity="sha512-pTaEn+6gF1IeWv3W1+7X7eM60TFu/agjgoHmYhAfLEU8Phuf6JKiiE8YmsNC0aCgQv4192s4Vai8YZ6VNM6vyQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"
+    integrity="sha512-IOebNkvA/HZjMM7MxL0NYeLYEalloZ8ckak+NDtOViP7oiYzG5vn6WVXyrJDiJPhl4yRdmNAG49iuLmhkUdVsQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+    <style>
+        body {
+            background-color:rgb(255, 217, 0);
+
+        }
+    .table-xsm {
+        font-size:80%;
+    }
+    .table-xsm>:not(caption)>*>* {
+        padding: 0.1rem 0.1rem;
+    }
+
+    footer {
+    text-align: center;
+    font-size: .75rem;
+    color: #999;
+    padding: 2rem 1rem;
+    }
+    footer a:link, footer a:visited {
+    color: #777;
+    }
+    footer p {
+    margin-bottom: .5rem;
+    }
+</style>
+</head>
+<body>
+
+<div class="container mt-5">
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+        <h1>NYC Parking Violations - Quality Audit</h1>
+        <p>Is NYC Enforcing parking on your block? Check!</p>
+        <p class="fw-light">This tool shows a calendar heatmap with the number of parking violations written on a particular date. 
+            NYC has low quality routine parking enforcement by NYPD Traffic, and this tool is to help hold them accountable to more rigerous parking enforcement.</p>
+        <p class="fw-light">This visiualization uses data from 
+            <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2023/pvqr-7yc4" class="text-dark">Parking Violations Issued - Fiscal Year 2023</a>. 
+            Data quality varies significantly by the agency writting parking violation, and is updated monthly. 
+            Many tickets (especially those issued by NYPD Precints) are written under multiple variations of a street name.</p>
+        <hr>
+        </div>
+    </div>
+
+    <div class="row">
+
+    <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
+        <!-- <h2>Violation Lookup</h2> -->
+
+        <form>
+    <div class="mb-2">
+        <label for="borough-select">Borough</label>
+        <select id="borough-select">
+            <option value="Manhattan" selected>Manhattan</option>
+            <option value="Bronx">Bronx</option>
+            <option value="Queens">Queens</option>
+            <option value="Brooklyn">Brooklyn</option>
+            <option value="Staten Island">Staten Island</option>
+        </select>
+    </div>
+    <div class="mb-2">
+        <label for="agency-select">Issuing Agency</label>
+        <select id="agency-select">
+            <option value="all">All</option>
+            <option value="T">Traffic</option>
+            <option value="P">Police Department</option>
+            <option value="S">Sanitation</option>
+            <option value="K">Parks</option>
+            <!-- <option value="V">DOT</option> -->
+        </select>
+    </div>
+    <div class="mb-2">
+        <label for="street-select">Street:</label>
+        <select id="street-select" multiple>
+            <!-- <option value="">--Loading--</option> -->
+        </select>
+        <div class="form-text">
+            ⚠️ Warning: Streets may be listed multiple times with different naming variations.
+        </div>
+    </div>
+    <div class="mb-2 cross-streets-row" id="cross-streets-container">
+        Cross Streets
+        <div id="cross-streets">
+
+        </div>
+    </div>
+    <div class="mb-2">
+        House numbers (inclusive) <input type="text" id="house-start" value="300" size="4"> to <input type="text" id="house-end" value="399" size="4">
+    </div>
+    <div class="row bg-light pt-3 rounded-bottom-3">
+    <div class="mb-2">
+        <button id="query-button" type="submit" class="btn btn-info">Search</button>
+    </div>
+</div>
+    </form>
+    </div>
+</div>
+
+<div id="report-data" class="row mb-5"></div>
+<div class="row mb-2 text-muted fw-light">
+    <div class="col-lg-8">
+        <p>Methodlogy: Streets with less than 3 summonses issued are excluded from street selection. Records that are missing a street, violation_county or have issue_dates before the start of the fiscal year (July 1st) or after the current date (in the future) are also excluded.</p>
+    </div>
+</div>
+<div class="row">
+    <footer>
+        <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
+        <p>Data from <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2023/pvqr-7yc4">NYC Open Data</a></p>
+    </footer>
+</div>
+
+</div>
+    <script type="module">
+    // from https://gist.github.com/tophtucker/87f02769353208d625c4762a02a3ad55
+    import {Runtime} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@5/dist/runtime.js";
+    import d3_Legend from "https://api.observablehq.com/@d3/color-legend.js?v=3";
+    import d3_HorizontalBarChart from "https://api.observablehq.com/@d3/horizontal-bar-chart.js?v=3";
+
+    import Calendar from "./d3_calendar_continual.js"
+
+    const runtime = new Runtime()
+    const Legend = await runtime.module(d3_Legend).value("Legend");
+    const BarChart = await runtime.module(d3_HorizontalBarChart).value("BarChart");
+
+    const ViolationCodes = {
+        "1":"FAILURE TO DISPLAY BUS PERMIT",
+        "2":"NO OPERATOR NAM/ADD/PH DISPLAY",
+        "3":"UNAUTHORIZED PASSENGER PICK-UP",
+        "4":"BUS PARKING IN LOWER MANHATTAN",
+        "5":"BUS LANE VIOLATION",
+        "6":"OVERNIGHT TRACTOR TRAILER PKG",
+        "7":"FAILURE TO STOP AT RED LIGHT",
+        "8":"IDLING",
+        "9":"OBSTRUCTING TRAFFIC/INTERSECT",
+        "10":"NO STOPPING-DAY/TIME LIMITS",
+        "11":"NO STANDING-HOTEL LOADING",
+        "12":"MOBILE BUS LANE VIOLATION",
+        "13":"NO STANDING-TAXI STAND",
+        "14":"NO STANDING-DAY/TIME LIMITS",
+        "15":"NO STANDING-OFF-STREET LOT",
+        "16":"NO STANDING-EXC. TRUCK LOADING",
+        "17":"NO STANDING-EXC. AUTH. VEHICLE",
+        "18":"NO STANDING-BUS LANE",
+        "19":"NO STANDING-BUS STOP",
+        "20":"NO PARKING-DAY/TIME LIMITS",
+        "21":"NO PARKING-STREET CLEANING",
+        "22":"NO STAND TAXI/FHV RELIEF STAND",
+        "23":"NO PARKING-TAXI STAND",
+        "24":"NO PARKING-EXC. AUTH. VEHICLE",
+        "25":"NO STANDING-COMMUTER VAN STOP",
+        "26":"NO STANDING-FOR HIRE VEH STND",
+        "27":"NO PARKING-EXC. DSBLTY PERMIT",
+        "28":"OVERTIME STANDING DP",
+        "29":"ALTERING INTERCITY BUS PERMIT",
+        "30":"NO STOP/STANDNG EXCEPT PAS P/U",
+        "31":"NO STANDING-COMM METER ZONE",
+        "32":"OT PARKING-MISSING/BROKEN METR",
+        "33":"MISUSE PARKING PERMIT",
+        "34":"EXPIRED METER",
+        "35":"SELLING/OFFERING MCHNDSE-METER",
+        "36":"PHTO SCHOOL ZN SPEED VIOLATION",
+        "37":"EXPIRED MUNI METER",
+        "38":"FAIL TO DSPLY MUNI METER RECPT",
+        "39":"OVERTIME PKG-TIME LIMIT POSTED",
+        "40":"FIRE HYDRANT",
+        "41":"MISCELLANEOUS",
+        "42":"EXPIRED MUNI MTR-COMM MTR ZN",
+        "43":"EXPIRED METER-COMM METER ZONE",
+        "44":"PKG IN EXC. OF LIM-COMM MTR ZN",
+        "45":"TRAFFIC LANE",
+        "46":"DOUBLE PARKING",
+        "47":"DOUBLE PARKING-MIDTOWN COMML",
+        "48":"BIKE LANE",
+        "49":"EXCAVATION-VEHICLE OBSTR TRAFF",
+        "50":"CROSSWALK",
+        "51":"SIDEWALK",
+        "52":"INTERSECTION",
+        "53":"SAFETY ZONE",
+        "54":"PCKP DSCHRGE IN PRHBTD ZONE",
+        "55":"ELEVATED/DIVIDED HIGHWAY/TUNNL",
+        "56":"DIVIDED HIGHWAY",
+        "57":"BLUE ZONE",
+        "58":"MARGINAL STREET/WATER FRONT",
+        "59":"ANGLE PARKING-COMM VEHICLE",
+        "60":"ANGLE PARKING",
+        "61":"WRONG WAY",
+        "62":"BEYOND MARKED SPACE",
+        "63":"NIGHTTIME STD/ PKG IN A PARK",
+        "64":"NO STANDING EXCP D/S",
+        "65":"OVERTIME STDG D/S",
+        "66":"DETACHED TRAILER",
+        "67":"PEDESTRIAN RAMP",
+        "68":"NON-COMPLIANCE W/ POSTED SIGN",
+        "69":"FAIL TO DISP. MUNI METER RECPT",
+        "70":"REG. STICKER-EXPIRED/MISSING",
+        "71":"INSP. STICKER-EXPIRED/MISSING",
+        "72":"INSP STICKER-MUTILATED/C'FEIT",
+        "73":"REG STICKER-MUTILATED/C'FEIT",
+        "74":"FRONT OR BACK PLATE MISSING",
+        "75":"NO MATCH-PLATE/STICKER",
+        "76":"VIN OBSCURED",
+        "77":"PARKED BUS-EXC. DESIG. AREA",
+        "78":"NGHT PKG ON RESID STR-COMM VEH",
+        "79":"UNAUTHORIZED BUS LAYOVER",
+        "80":"MISSING EQUIPMENT",
+        "81":"NO STANDING EXCP DP",
+        "82":"COMML PLATES-UNALTERED VEHICLE",
+        "83":"IMPROPER REGISTRATION",
+        "84":"PLTFRM LFTS LWRD POS COMM VEH",
+        "85":"STORAGE-3HR COMMERCIAL",
+        "86":"MIDTOWN PKG OR STD-3HR LIMIT",
+        "87":"FRAUDULENT USE PARKING PERMIT",
+        "88":"UNALTERED COMM VEH-NME/ADDRESS",
+        "89":"NO STD(EXC TRKS/GMTDST NO-TRK)",
+        "90":"VEH-SALE/WSHNG/RPRNG/DRIVEWAY",
+        "91":"VEHICLE FOR SALE(DEALERS ONLY)",
+        "92":"WASH/REPAIR VEHCL-REPAIR ONLY",
+        "93":"REMOVE/REPLACE FLAT TIRE",
+        "96":"RAILROAD CROSSING",
+        "97":"VACANT LOT",
+        "98":"OBSTRUCTING DRIVEWAY",
+        "99":"OTHER"
+    }
+    const agencyLookup = {
+        "P": "Police Department",
+        "T": "Traffic",
+        "S": "Sanitation",
+        "K": "Parks",
+    }
+
+    let streetData = [];
+    var _checkboxIndex = 0;
+
+    function nullString(s) {
+        return s === null ? "" : s
+    }
+    function defaultString(s, d) {
+        return s === "" ? d : s
+    }
+
+    function bootstrap() {
+        // console.log("bootstrap")
+        const urlSearchParams = new URLSearchParams(window.location.search)
+        document.getElementById("borough-select").value = defaultString(nullString(urlSearchParams.get("borough")), "Manhattan")
+        document.getElementById("agency-select").value = defaultString(nullString(urlSearchParams.get("agency")), "T")
+        document.getElementById("house-start").value = defaultString(nullString(urlSearchParams.get("house-start")), "300")
+        document.getElementById("house-end").value = defaultString(nullString(urlSearchParams.get("house-end")), "399")
+
+        loadStreets(urlSearchParams.getAll("street"), urlSearchParams.getAll("intersection"));
+
+        // wrap event methods so first argument is not event
+        document.getElementById("borough-select").addEventListener("change", _ => {loadStreets()});
+        document.getElementById("agency-select").addEventListener("change", _ => {updateStreets()});
+        document.getElementById("street-select").addEventListener("change", populateIntersections);
+        document.getElementById("query-button").addEventListener("click", queryNYCOpenData);
+
+    }
+
+    function saveURLState() {
+        var qs = new URLSearchParams()
+        qs.set("borough", document.getElementById("borough-select").value)
+        Array.from(document.getElementById("street-select").selectedOptions).forEach(d=>{
+            qs.append("street", d.value)
+        })
+        Array.from(document.getElementsByName("intersecting-street-option")).filter(d => d.checked).forEach(d=>{
+            qs.append("intersection", d.value)
+        })
+        qs.set("agency", document.getElementById("agency-select").value)
+        const houseStart = document.getElementById("house-start").value
+        if (houseStart !== "") {qs.set("house-start", houseStart)}
+        const houseEnd = document.getElementById("house-end").value
+        if (houseEnd !== "") {qs.set("house-end", houseEnd)}
+        
+        const l = qs.toString();
+        history.pushState(null, document.title, l.length == 0 ? window.location.pathname : window.location.pathname + "?" + l)
+    }
+
+
+    function loadStreets(defaultStreets, defaultIntersections) {
+        // console.log("loadStreets");
+        const borough = document.getElementById("borough-select").value;
+
+        let filename = ""
+        switch (borough) {
+            case "Brooklyn":
+                filename = "bk_intersecting_streets.json"
+                break;
+            case "Manhattan":
+                filename = "ny_intersecting_streets.json"
+                break;
+            case "Bronx":
+                filename = "bx_intersecting_streets.json"
+                break;
+            case "Queens":
+                filename = "qn_intersecting_streets.json"
+                break;
+            case "Staten Island":
+                filename = "si_intersecting_streets.json"
+                break;
+        }
+        
+        console.log("opening", filename);
+        d3.json(filename).then(function(data) {
+            streetData = data.map(d => {
+                return {
+                    street_name : d.st,
+                    issuing_agencies : d.a,
+                    // borough : d.c,
+                    intersecting_streets : d.i
+                }
+            })
+            // console.log("data loaded", streetData[0], streetData.length)
+            updateStreets(defaultStreets, defaultIntersections)
+        });
+    }
+
+    function updateStreets(defaultStreets, defaultIntersections) {
+        const issuingAgency = document.getElementById("agency-select").value;
+        const streetSelect = document.getElementById("street-select");
+        const currentStreets = new Set(defaultStreets == undefined ? Array.from(streetSelect.selectedOptions).map(d=>d.value) : defaultStreets)
+        const availableStreets = new Set()
+
+        // console.log("updateStreets", streetData[0], streetData.length, "default", currentStreet);
+
+        // remove any existing options
+        while (streetSelect.firstChild) {
+            streetSelect.removeChild(streetSelect.firstChild);
+        }
+        const selectize = document.getElementById("street-select").selectize
+        if (selectize != undefined) {
+            selectize.refreshOptions();
+            selectize.clearOptions();
+        }
+
+        streetData.forEach(streetObj => {
+            // check isuing agency selection
+            if (issuingAgency != "all" && streetObj.issuing_agencies.indexOf(issuingAgency) == -1) {
+                return
+            }
+            if (selectize != undefined) {
+                selectize.addOption(streetObj)
+                if (currentStreets.has(streetObj.street_name)) {
+                    availableStreets.add(streetObj.street_name)
+                }
+            } else {
+                const option = document.createElement("option");
+                option.value = streetObj.street_name;
+                option.text = streetObj.street_name;
+                if (currentStreets.has(streetObj.street_name)) {option.selected = true}
+                streetSelect.appendChild(option);
+            }
+        });
+        if (selectize == undefined) {
+            $("#street-select").selectize({
+                plugins: ["remove_button"],
+                valueField: 'street_name',
+                labelField: 'street_name',
+                searchField: 'street_name',
+                onChange: populateIntersections,
+            })
+        } else {
+            // re-set the same options we had previously
+            selectize.refreshOptions()
+            selectize.setValue(availableStreets)
+        }
+
+        populateIntersections(defaultIntersections);
+    }
+
+    
+    // function to populate intersection options based on street selection
+    function populateIntersections(defaultIntersections) {
+        // console.log("populateCrossStreet1", defaultIntersections);
+
+        const selectedStreets = new Set( Array.from(document.getElementById("street-select").selectedOptions).map(d=>d.value));
+        const selectedIntersections = new Set(defaultIntersections == undefined ? Array.from(document.getElementsByName("intersecting-street-option")).filter(d => d.checked).map(d => d.value) : defaultIntersections)
+
+        const crossStreets = document.getElementById("cross-streets");
+        crossStreets.innerHTML = "";
+        const streets = streetData.filter(streetObj => selectedStreets.has(streetObj.street_name));
+        
+        let seen = new Set();
+        streets.forEach(streetObj => {
+            streetObj.intersecting_streets.forEach(intersectingStreet => {
+                seen.add(intersectingStreet);
+            })
+        })
+        document.getElementById("cross-streets-container").style.display = seen.size > 0 ? "block" : "none";
+
+        // TODO: sort by suffix not natural sort?
+        Array.from(seen).sort().forEach(intersectingStreet => {
+            const div = document.createElement("div")
+            div.className = "form-check form-check-inline"
+            const label = document.createElement("label")
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox"
+            checkbox.name = "intersecting-street-option"
+            checkbox.className = "form-check-input"
+            checkbox.value = intersectingStreet;
+            checkbox.id = "intersection-" + (++_checkboxIndex)
+            if (selectedIntersections.has(intersectingStreet)) {
+                checkbox.checked = true
+            }
+            div.appendChild(checkbox)
+            label.className = "form-check-label"
+            label.htmlFor = "intersection-" + _checkboxIndex
+            label.appendChild(document.createTextNode(intersectingStreet))
+            // label.class="me-2"
+            div.appendChild(label);
+            crossStreets.appendChild(div)
+            // TODO: change listener
+        });
+        showQueryButton(); // temp
+    }
+
+    function showQueryButton() {
+        document.getElementById("query-button").style.display = "block";
+    }
+    
+// function to query NYC Open Data and render D3 calendar chart
+function queryNYCOpenData() {
+    event.preventDefault();
+    saveURLState();
+
+    const street = Array.from(document.getElementById("street-select").selectedOptions).map(d => d.value);
+    const issuingAgency = document.getElementById("agency-select").value;
+    const borough = document.getElementById("borough-select").value;
+    const houseStart = parseInt(document.getElementById("house-start").value, 10);
+    const houseEnd = parseInt(document.getElementById("house-end").value, 10);
+
+    document.getElementById("report-data").innerHTML = ''
+    const el = document.createElement("div");
+    el.className = "row my-2 py-2 bg-white";
+    document.getElementById("report-data").appendChild(el)
+    const heading = document.createElement("h2")
+    heading.innerText = `Violations on ${houseStart}-${houseEnd} ${street}`
+    // heading.class="m-3"
+    el.appendChild(heading)
+
+    let spinner = document.createElement("div")
+    spinner.className = "spinner-border m-5"
+    spinner.setAttribute("role", "status")
+    // spinner.innerText = "Loading ..." FIXME: invalid html structure; see https://getbootstrap.com/docs/5.2/components/spinners/
+    el.appendChild(spinner)
+
+
+    // TODO: violation_time, summons_number
+    const url = `https://data.cityofnewyork.us/resource/pvqr-7yc4.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=20000`;
+    let filters = [
+        // "issue_date>='2022-07-01'"
+    ];
+
+    if (street.length == 0) {
+        let err = el.appendChild(document.createElement("div"));
+        err.className="alert"
+        err.innerText="Error: street not selected"
+        el.removeChild(spinner)
+        return;
+    } else if (street.length == 1) {
+        filters.push(`street_name="${street[0]}"`)
+    } else {
+        filters.push(`street_name in ('${street.join("','")}')`)
+    }
+     
+    switch (borough) {
+        case "Brooklyn":
+            filters.push(`violation_county in ('BK', 'K', 'Kings')`)
+            break;
+        case "Manhattan":
+            filters.push(`violation_county in ('NY', 'MN')`)
+            break;
+        case "Bronx":
+        filters.push(`violation_county in ('BX', 'Bronx')`)
+            break;
+        case "Queens":
+            filters.push(`violation_county in ('Q', 'QN', 'Qns')`)
+            break;
+        case "Staten Island":
+            filters.push(`violation_county in ('R', 'Rich', 'ST')`)
+            break;
+    }
+
+    if (issuingAgency != "all") {
+        filters.push(`issuing_agency='${issuingAgency}'`)
+    } else {
+        filters.push(`issuing_agency in ('T','P','S','K')`)
+    }
+    const queryString = `&$where=${filters.join(" AND ")}`
+    const fullUrl = `${url}${queryString}`;
+
+    function isHouseMatch(h, houseStart, houseEnd) {
+        if (isNaN(houseStart) || isNaN(houseEnd)) { return true;}
+        if (houseStart > houseEnd) { return false }
+        if (h === "") { return false}
+        // console.log(h, houseStart, houseEnd)
+        h = parseInt(h, 10)
+        if (isNaN(h)) { return false }
+        if (h < houseStart || h > houseEnd) { return false }
+        return true
+    }
+    function isIntersectingMatch(i, options) {
+        if (options.length == 0) { return false ;} // default to match none
+        const s = i.toLowerCase()
+        .replace(/.+ (.+\/of .+$)/, '$1') // strip the prefix before "w/of street"
+        // console.log(i, s, options.indexOf(s))
+        return options.indexOf(s) !== -1
+    }  
+
+    d3.csv(fullUrl).then(function(data) {
+        // parse date strings to Date objects
+        const parseDate = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L");
+        const parseTime = d3.utcParse("%I%M%p");
+        const dtFormatHour = new Intl.DateTimeFormat("en-US", {
+            hour: "numeric",
+            minute: "numeric",
+            // dayPeriod: "narrow",
+            hour12: true,
+            timeZone: "UTC",
+        });
+        data.forEach(function(d) {
+            d.issue_date = parseDate(d.issue_date);
+
+            let violation_time = parseTime(d.violation_time + "M")
+            if (violation_time != null ) {
+                d.issue_date.setUTCHours(violation_time.getUTCHours())
+                d.issue_date.setUTCMinutes(violation_time.getUTCMinutes())
+                d.violation_time = dtFormatHour.format(d.issue_date)
+            }
+
+        })
+        data.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
+
+        const validIntersections = Array.from(document.getElementsByName("intersecting-street-option")).filter(d => d.checked).map(d => d.value)
+        // console.log("validIntersections", validIntersections)
+
+        const lowCutoff = new Date("2022-07-01") // not all agencies start at the same time
+        const highCutoff = new Date() // yes some data shows up from the future
+        data = data.filter( d=> { 
+            if (d.issue_date < lowCutoff || d.issue_date > highCutoff) { return false; }
+            if (houseStart == NaN && houseEnd == NaN && validIntersections.length == 0) { return true;}
+            // records must either match on an intersection (if set) XOR a house number
+            if (d.intersecting_street !== "") { 
+                return isIntersectingMatch(d.intersecting_street, validIntersections)
+            }
+            return isHouseMatch(d.house_number , houseStart, houseEnd)
+        });
+        // console.log("matching data", data.length, data.slice(0,10))
+
+        // group data by issue_date
+        const groupByDate = d3.rollups(data, v => v.length, d => d3.utcDay(d.issue_date));
+        const topDate = d3.greatest(groupByDate, ([, v]) => v)[0];
+        const topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
+        const groupByAgency = d3.rollups(data, v => v.length, d => d.issuing_agency);
+        const groupByViolation = d3.rollups(data, v => v.length, d => d.violation_code);
+        const topViolation = d3.greatest(groupByViolation, ([, v]) => v)[0];
+        const topViolationCount = d3.greatest(groupByViolation, ([, v]) => v)[1];
+        const dtFormatLong = new Intl.DateTimeFormat("en-US", {
+            weekday: "short",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            timeZone: "UTC",
+        });
+
+
+        const summary = el.appendChild(document.createElement("p"))
+        summary.className="summary"
+        let summaryParagraphs = [
+            `There were <mark>${data.length}</mark> violations issued`,
+            ` for street <mark>${street}</mark> `,
+            ` for addresses <mark>${houseStart}-${houseEnd}</mark>`,
+            (validIntersections.length == 0 ? "" :` or <mark>${validIntersections.length}</mark> intersecting streets`),
+            `. `
+        ]
+        if (data.length > 0 ) {
+            summaryParagraphs.push(`Violations were issued on <mark>${groupByDate.length}</mark> days. `)
+            if (groupByDate.length > 1) {
+                summaryParagraphs.push(`The most violations (<mark>${topDateCount}</mark>) where issued on <mark>${dtFormatLong.format(topDate)}</mark>. `)
+            }
+            summaryParagraphs.push(`The most common violation was <mark>${ViolationCodes[topViolation]}</mark> issued <mark>${topViolationCount}</mark> times. `)
+        }
+        if (groupByAgency.length > 1) {
+            groupByAgency.sort((a, b) => d3.descending(a[1], b[1])).forEach(([agency, count]) => {
+                summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> violations. `)
+            })
+        }
+        summary.innerHTML = summaryParagraphs.join("")
+
+        // console.log(groupByDate);
+        
+        // create calendar chart
+        const maxVal = d3.max(groupByDate, d=> d[1]);
+        const calendarChart = Calendar(groupByDate, {
+            x: d => d[0],
+            y: d => d[1],            
+            // color: d3.scaleSequential([0, maxVal], d3.interpolateSpectral),
+            color: d3.scaleSequential([0, maxVal], d3.interpolateHcl("#fafa6e", "#2A4858")),
+            weekday:"sunday",
+            width:900,
+            // yFormat: "%d",
+            cellSize: 15,
+        })
+
+
+        let container = document.createElement("div")
+        container.className = "calendar-chart"
+        container.appendChild(Legend(
+            calendarChart.scales.color, {
+                title: "FY 2022-2023 Violations/day",
+                width: 500,
+            }
+        ));
+        el.removeChild(spinner)
+        el.appendChild(container)
+
+        container = document.createElement("div")
+        container.className = "calendar-chart mb-4"
+        container.appendChild(calendarChart)
+        el.appendChild(container)
+
+        // container = document.createElement("div")
+        // container.className = "agency-chart"
+        // container.appendChild(BarChart(groupByAgency, {
+        //     x: d => d[1],
+        //     y: d => d[0],
+        //     //   yDomain: d3.groupSort(alphabet, ([d]) => -d.frequency, d => d.letter), // sort by descending frequency
+        //     //   xFormat: "%",
+        //     xLabel: "Frequency →",
+        //     //   width,
+        //     color: "steelblue"
+        // }))
+        // el.appendChild(container)
+
+        const debugQuery = el.appendChild(document.createElement("div"))
+        debugQuery.className = "mb-2"
+        debugQuery.innerHTML=filters.map(d=>`<code>${d}</code><br>`).join("\n")
+
+        const table = el.appendChild(document.createElement("table"))
+        table.className = "table table-sm table-xsm table-striped mb-2 p-2"
+
+        const thead = table.appendChild(document.createElement("thead"))
+        const tr = thead.appendChild(document.createElement("tr"))
+        tr.className = "bg-dark text-light"
+        tr.appendChild(document.createElement("th")).innerText = "Date"
+        tr.appendChild(document.createElement("th")).innerText = "License"
+        tr.appendChild(document.createElement("th")).innerText = "Location"
+        tr.appendChild(document.createElement("th")).innerText = "Agency"
+        tr.appendChild(document.createElement("th")).innerText = "Violation"
+
+        const tbody = table.appendChild(document.createElement("tbody"))
+        const dtFormat = new Intl.DateTimeFormat("en-US");
+        data.forEach(d => {
+            const tr = tbody.appendChild(document.createElement("tr"))
+            tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time // TODO format
+            let cell = tr.appendChild(document.createElement("td"))
+            cell.innerText = d.registration_state + ":" + d.plate_id 
+            cell.className = "font-monospace"
+            tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street == "" ? "":  " @ " + d.intersecting_street)
+            tr.appendChild(document.createElement("td")).innerText = agencyLookup[d.issuing_agency]
+            tr.appendChild(document.createElement("td")).innerText = ViolationCodes[d.violation_code]
+        })
+        el.appendChild(table)
+        return false;
+    });
+
+}
+
+// document.getElementById("query-button").addEventListener("submit", function(evt) {
+//         event.preventDefault();
+//         return false;
+//     }, true);
+    bootstrap();
+    </script>
+</body>
+</html>
