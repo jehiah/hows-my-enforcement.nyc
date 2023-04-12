@@ -132,8 +132,30 @@
 </div>
 
 </div>
-    <script type="module">
-    // from https://gist.github.com/tophtucker/87f02769353208d625c4762a02a3ad55
+
+<script src="https://cdn.jsdelivr.net/npm/vega@5.24.0/build/vega.min.js" integrity="sha256-wDSDs2di0jUZO4bBtopE7QHmCwHOryN6YTap5zFVnMY=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.6.1/build/vega-lite.min.js" integrity="sha256-jgG1hU/mYJ1Xl8C1jWGt1zpHzKqIXXakEzgEBYq3scY=" crossorigin="anonymous"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/vega-lite-api@5.6.0/build/vega-lite-api.min.js" integrity="sha256-UOe+/O1xtdfkFARzStIH0FE4MwCJRbNLoB759+sjwkY=" crossorigin="anonymous"></script> -->
+<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.21.3/build/vega-embed.min.js" integrity="sha256-nsYX2Lg0shnWk9W8MShXktG5nlzvrsDWnhPtIof7fa4=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/vega-tooltip@0.31.0/build/vega-tooltip.min.js" integrity="sha256-GYJfXGdfCWBa0VdwfhTCdDFwezVQALoaxpgTirrT26Y=" crossorigin="anonymous"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.8.3/dist/d3.min.js" integrity="sha256-z9jvEmgHGEfWO4rPfEXUGKFd6UkxkavfJ0zf3qT31O4=" crossorigin="anonymous"></script>
+
+<script type="module">
+    // from https://observablehq.com/@vega/vega-lite-api
+    // const options = {
+    //     init: (view) => {
+    //       // initialize tooltip handler
+    //       view.tooltip(new vegaTooltip.Handler().call);
+    //     },
+    //     view: {
+    //     //   renderer: "canvas",
+    //     }
+    // };
+    // vl.register(vega, vegaLite, options);
+
+
+    //   from https://gist.github.com/tophtucker/87f02769353208d625c4762a02a3ad55
     import {Runtime} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@5/dist/runtime.js";
     import d3_Legend from "https://api.observablehq.com/@d3/color-legend.js?v=3";
     import d3_HorizontalBarChart from "https://api.observablehq.com/@d3/horizontal-bar-chart.js?v=3";
@@ -322,8 +344,11 @@
         }
         
         console.log("opening", filename);
-        d3.json(filename).then(function(data) {
-            streetData = data.map(d => {
+
+        fetch(filename)
+        .then(response => response.json())
+        .then(d => {
+            streetData = d.map(d => {
                 return {
                     street_name : d.st,
                     issuing_agencies : d.a,
@@ -331,9 +356,9 @@
                     intersecting_streets : d.i
                 }
             })
-            // console.log("data loaded", streetData[0], streetData.length)
             updateStreets(defaultStreets, defaultIntersections)
-        });
+        })
+
     }
 
     function updateStreets(defaultStreets, defaultIntersections) {
@@ -541,6 +566,7 @@ function queryNYCOpenData() {
         });
         data.forEach(function(d) {
             d.issue_date = parseDate(d.issue_date);
+            d.issue_date_dayonly = parseDate(d.issue_date); // day granularity (no time component)
 
             let violation_time = parseTime(d.violation_time + "M")
             if (violation_time != null ) {
@@ -572,6 +598,11 @@ function queryNYCOpenData() {
         const groupByDate = d3.rollups(data, v => v.length, d => d3.utcDay(d.issue_date));
         const topDate = d3.greatest(groupByDate, ([, v]) => v)[0];
         const topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
+
+        const violationsByDay = groupByDate.map(([k,v]) => {return {date:k, value:v}})
+        const groupOfDate = violationsByDay.map(d => d.date.toDateString())
+        violationsByDay.push(... d3.utcDay.range(lowCutoff, highCutoff).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, value:0}}))
+
         const groupByAgency = d3.rollups(data, v => v.length, d => d.issuing_agency);
         const groupByViolation = d3.rollups(data, v => v.length, d => d.violation_code);
         const topViolation = d3.greatest(groupByViolation, ([, v]) => v)[0];
@@ -609,6 +640,216 @@ function queryNYCOpenData() {
         summary.innerHTML = summaryParagraphs.join("")
 
         // console.log(groupByDate);
+
+        // let heatmap = vl.markRect({tooltip: {"content": "data"}, clip: true})
+        // .data(data)
+        // // .transform(
+        // //     vl.aggregate("count").groupby("issue_date_dayonly"))
+        // .encode(
+        //     vl.y().fieldO("issue_date").timeUnit("utcday"),
+        //     vl.x().fieldO("issue_date").timeUnit("utcdayofyear"),
+        //     vl.color().count("issue_date").scale({ scheme: "redyellowblue", reverse: true }),
+        //     // vl.size().average("precip")
+        // )
+        // heatmap.render()
+        // .then(chart => el.appendChild(chart))
+        // // el.appendChild(heatmap)
+        // console.log(heatmap);
+        // window.heatmap = heatmap;
+
+        // console.log(JSON.stringify(groupByDate.slice(0,5).map(([k,v]) => {return {date:k, count:v}})))
+
+        console.log(violationsByDay)
+
+       const calendarSchema =  {
+  "$schema": "https://vega.github.io/schema/vega/v5.json",
+  "description": "A calendar visualization of daily changes to the S&P 500 since 2000.",
+  "padding": 5,
+
+  "signals": [
+    {"name": "step", "value": 16},
+    {"name": "offset", "value": 10},
+    {"name": "width", "update": "step * 52 + offset * 11"},
+    {"name": "height", "update": "step * 5"},
+    {
+      "name": "scheme", "value": "pinkyellowgreen",
+      "bind": {
+        "input": "select",
+        "options": [
+          "pinkyellowgreen",
+          "blueorange",
+          "brownbluegreen",
+          "purplegreen",
+          "purpleorange",
+          "redblue",
+          "redgrey",
+          "redyellowblue",
+          "redyellowgreen",
+          "spectral"
+        ]
+      }
+    }
+  ],
+
+  "data": [
+    {
+      "name": "violations_by_day",
+      "values": violationsByDay,
+      "transform": [
+        {
+          "type": "formula",
+          "expr": "year(datum.date)",
+          "as": "year"
+        },
+        {
+          "type": "timeunit", "field": "date",
+          "units": ["year", "week"],
+          "as": ["w0", "w1"]
+        },
+        {"type": "formula", "expr": "timeOffset('day', datum.w0)", "as": "w0"},
+        {
+          "type": "timeunit", "field": "date",
+          "units": ["day"],
+          "as": ["d0", "d1"]
+        }
+      ]
+    }
+  ],
+  "scales": [
+    {
+      "name": "y",
+      "type": "band",
+      "domain": {"data": "violations_by_day", "field": "d0", "sort": true},
+      "range": {"step": {"signal": "step"}}
+    },
+    {
+      "name": "color",
+      "type": "linear",
+    //   "clamp": true,
+      "range": {"scheme": {"signal": "scheme"}},
+    //   "domain": [-0.06, 0, 0.06]
+    "domain": [1, 50]
+    }
+  ],
+
+  "legends": [
+    {
+      "fill": "color",
+      "title": "FY 2022-2023 Violatiosn/day",
+      "titleFontSize": 12,
+      "titleOrient": "left",
+      "titlePadding": 20,
+      "offset": 15,
+      "orient": "top",
+      "type": "gradient",
+      "direction": "horizontal",
+      "gradientLength": 300,
+      "gradientThickness": 10,
+    //   "format": "0.1"
+    }
+  ],
+
+  "layout": {
+    "columns": 1,
+    "padding": 15
+  },
+
+  "marks": [
+    {
+      "type": "group",
+
+      "from": {
+        "facet": {
+          "data": "violations_by_day",
+          "name": "values",
+          "groupby": "year"
+        }
+      },
+      "sort": {
+        "field": "datum.year",
+        "order": "descending"
+      },
+      "data": [
+        {
+          "name": "max",
+          "source": "values",
+          "transform": [
+            {"type": "aggregate", "ops": ["max"], "fields": ["date"]}
+          ]
+        },
+        {
+          "name": "weeks",
+          "transform": [
+            {"type": "sequence", "start": 0, "stop": 53, "as": "weeknum"},
+            {"type": "formula", "expr": "datetime(parent.year, 0, 1 + datum.weeknum * 7)", "as": "date"},
+            {"type": "timeunit", "units": ["year", "week"], "field": "date", "as": ["w0", "w1"]},
+            {"type": "formula", "expr": "timeOffset('day', datum.w0)", "as": "w0"},
+            {"type": "filter", "expr": "datum.date < data('max')[0].max_date"}
+          ]
+        }
+      ],
+
+      "scales": [
+        {
+          "name": "x",
+          "type": "band",
+          "domain": {"data": "weeks", "field": "w0", "sort": true},
+          "range": {"step": {"signal": "step"}}
+        }
+      ],
+
+      "axes": [
+        {
+          "orient": "left", "scale": "y",
+          "ticks": false, "domain": false, "labelPadding": 8,
+          "format": "%a", "formatType": "time",
+          "title": {"signal": "parent.year"},
+          "titleAngle": 0, "titleAlign": "right",
+          "titleX": -8, "titleY": -2,  "titleFontSize": 10
+        },
+        {
+          "orient": "top", "scale": "x",
+          "ticks": false, "domain": false,
+          "format": "%b", "formatType": "time",
+          "labelAlign": "left",
+          "encode": {
+            "labels": {
+              "update": {
+                "x": {
+                  "scale": "x", "field": "value", "band": 0,
+                  "offset": {"signal": "month(datum.value) * offset"}
+                },
+                "opacity": {"signal": "date(datum.value) < 8 ? 1 : 0"}
+              }
+            }
+          }
+        }
+      ],
+
+      "marks": [
+        {
+          "type": "rect",
+          "from": {"data": "values"},
+          "encode": {
+            "enter": {
+              "x": {"scale": "x", "field": "w0", "offset": {"signal": "month(datum.date) * offset"}},
+              "width": {"scale": "x", "band": 1, "offset": -1},
+              "y": {"scale": "y", "field": "d0"},
+              "height": {"scale": "y", "band": 1, "offset": -1},
+              "cornerRadius": {"value": 2},
+              "tooltip": {"signal": "timeFormat(datum.date, '%a %b %d, %Y') + '\\n' + format(datum.value, '+')"}
+            },
+            "update": {
+              "fill": {"scale": "color", "field": "value"}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
+vegaEmbed(el.appendChild(document.createElement('div')), calendarSchema)
+
         
         // create calendar chart
         const maxVal = d3.max(groupByDate, d=> d[1]);
