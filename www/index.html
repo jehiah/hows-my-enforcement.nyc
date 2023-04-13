@@ -481,8 +481,10 @@ function queryNYCOpenData() {
 
     // TODO: violation_time, summons_number
     const url = `https://data.cityofnewyork.us/resource/pvqr-7yc4.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=20000`;
-    let filters = [
-        // "issue_date>='2022-07-01'"
+    let filters = [];
+    const dateFormat = d3.utcFormat("%Y-%m-%d")
+    let displayFilters = [
+      `issue_date between ${dateFormat(FY.start)} and ${dateFormat(FY.end)}`,
     ];
 
     if (street.length == 0) {
@@ -606,15 +608,17 @@ function queryNYCOpenData() {
 
         const summary = el.appendChild(document.createElement("p"))
         summary.className="summary"
+
         let summaryParagraphs = [
-            `There were <mark>${data.length}</mark> violations issued`,
-            ` for street <mark>${street}</mark> `,
-            ` for addresses <mark>${houseStart}-${houseEnd}</mark>`,
-            (validIntersections.length == 0 ? "" :` or <mark>${validIntersections.length}</mark> intersecting streets`),
-            `. `
+          `Violations were issued on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the time). `,
+          `There were <mark>${data.length}</mark> violations issued`,
+          ` for street <mark>${street}</mark> `,
+          ` for addresses <mark>${houseStart}-${houseEnd}</mark>`,
+          (validIntersections.length == 0 ? "" :` or <mark>${validIntersections.length}</mark> intersecting streets`),
+          `. `
         ]
+
         if (data.length > 0 ) {
-            summaryParagraphs.push(`Violations were issued on <mark>${groupByDate.length}</mark> days. `)
             if (groupByDate.length > 1) {
                 summaryParagraphs.push(`The most violations (<mark>${topDateCount}</mark>) where issued on <mark>${dtFormatLong.format(topDate)}</mark>. `)
             }
@@ -676,9 +680,13 @@ function queryNYCOpenData() {
         // }))
         // el.appendChild(container)
 
-        const debugQuery = el.appendChild(document.createElement("div"))
-        debugQuery.className = "mb-2"
+        let debugQuery = el.appendChild(document.createElement("div"))
+        // debugQuery.className = "mb-2"
         debugQuery.innerHTML=filters.map(d=>`<code>${d}</code><br>`).join("\n")
+        debugQuery = el.appendChild(document.createElement("div"))
+        debugQuery.className = "mb-2"
+        debugQuery.innerHTML=displayFilters.map(d=>`<code>${d}</code><br>`).join("\n")
+
 
         const table = el.appendChild(document.createElement("table"))
         table.className = "table table-sm table-xsm table-striped mb-2 p-2"
