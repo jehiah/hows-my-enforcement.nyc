@@ -31,7 +31,9 @@
     .table-xsm>:not(caption)>*>* {
         padding: 0.1rem 0.1rem;
     }
-
+    .summary {
+        line-height: 1.7rem;
+    }
     footer {
     text-align: center;
     font-size: .75rem;
@@ -52,8 +54,8 @@
 
     <div class="row">
         <div class="col-12 col-lg-8">
-        <h1>NYC Parking Violations - Quality Audit</h1>
-        <p>Is NYC Enforcing parking on your block? Check!</p>
+        <h1>How is NYC Parking Enforcement?</h1>
+        <p>Is parking enforcement consistent and rigerous on your block? Check!</p>
         <p class="fw-light">This tool shows a calendar heatmap with the number of parking violations written on a particular date. 
             NYC has low quality routine parking enforcement by NYPD Traffic, and this tool is to help hold them accountable to more rigerous parking enforcement.</p>
         <p class="fw-light">This visiualization uses data from 
@@ -253,6 +255,10 @@
         "98":"OBSTRUCTING DRIVEWAY",
         "99":"OTHER"
     }
+    const nonParkingViolations = new Set([
+        "3", "7", "8", "29", "33", "36", "41", "54", "70","71", "72", "73", "74", "75", "76", "80", "82", "83", "84", "87", "88", "91", "97", "99"
+    ])
+
     const agencyLookup = {
         "P": "Police Department",
         "T": "Traffic",
@@ -462,6 +468,7 @@ function queryNYCOpenData() {
     const borough = document.getElementById("borough-select").value;
     const houseStart = parseInt(document.getElementById("house-start").value, 10);
     const houseEnd = parseInt(document.getElementById("house-end").value, 10);
+    const validIntersections = Array.from(document.getElementsByName("intersecting-street-option")).filter(d => d.checked).map(d => d.value)
 
     document.getElementById("report-data").innerHTML = ''
     const el = document.createElement("div");
@@ -486,6 +493,14 @@ function queryNYCOpenData() {
     let displayFilters = [
       `issue_date between ${dateFormat(FY.start)} and ${dateFormat(FY.end)}`,
     ];
+    if (!isNaN(houseStart) && !isNaN(houseEnd)) {
+        displayFilters.push(`house_number between ${houseStart} and ${houseEnd}`)
+    }
+    if (validIntersections.length > 1 ) {
+        displayFilters.push(`OR intersecting_street endswith one of ('${validIntersections.join("', '")}')`)
+    } else if (validIntersections.length == 1 ) {
+        displayFilters.push(`OR intersecting_street endswith '${validIntersections[0]}'`)
+    }
 
     if (street.length == 0) {
         let err = el.appendChild(document.createElement("div"));
@@ -569,9 +584,6 @@ function queryNYCOpenData() {
         })
         data.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
 
-        const validIntersections = Array.from(document.getElementsByName("intersecting-street-option")).filter(d => d.checked).map(d => d.value)
-        // console.log("validIntersections", validIntersections)
-
         data = data.filter( d=> { 
             if (d.issue_date < FY.start || d.issue_date > FY.end) { return false; }
             if (houseStart == NaN && houseEnd == NaN && validIntersections.length == 0) { return true;}
@@ -581,19 +593,23 @@ function queryNYCOpenData() {
             }
             return isHouseMatch(d.house_number , houseStart, houseEnd)
         });
+        const parkingData = data.filter(d => !nonParkingViolations.has(d.violation_code))
+        const nonParkingData = data.filter(d => nonParkingViolations.has(d.violation_code))
         // console.log("matching data", data.length, data.slice(0,10))
 
         // group data by issue_date
-        const groupByDate = d3.rollups(data, v => v.length, d => d3.utcDay(d.issue_date));
-        const topDate = d3.greatest(groupByDate, ([, v]) => v)[0];
-        const topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
+        const groupByDate = d3.rollups(parkingData, v => v.length, d => d3.utcDay(d.issue_date));
+        if (groupByDate.length > 0) {
+            const topDate = d3.greatest(groupByDate, ([, v]) => v)[0];
+            const topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
+        }
 
         const violationsByDay = groupByDate.map(([k,v]) => {return {date:k, count:v}})
         const groupOfDate = violationsByDay.map(d => d.date.toDateString())
         violationsByDay.push(... d3.utcDay.range(FY.start, FY.end).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, count:0}}))
 
-        const groupByAgency = d3.rollups(data, v => v.length, d => d.issuing_agency);
-        const groupByViolation = d3.rollups(data, v => v.length, d => d.violation_code);
+        const groupByAgency = d3.rollups(parkingData, v => v.length, d => d.issuing_agency);
+        const groupByViolation = d3.rollups(parkingData, v => v.length, d => d.violation_code);
         const topViolation = d3.greatest(groupByViolation, ([, v]) => v)[0];
         const topViolationCount = d3.greatest(groupByViolation, ([, v]) => v)[1];
         const dtFormatLong = new Intl.DateTimeFormat("en-US", {
@@ -610,12 +626,14 @@ function queryNYCOpenData() {
         summary.className="summary"
 
         let summaryParagraphs = [
-          `Violations were issued on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the time). `,
-          `There were <mark>${data.length}</mark> violations issued`,
-          ` for street <mark>${street}</mark> `,
-          ` for addresses <mark>${houseStart}-${houseEnd}</mark>`,
-          (validIntersections.length == 0 ? "" :` or <mark>${validIntersections.length}</mark> intersecting streets`),
-          `. `
+          `<mark>${parkingData.length}</mark> parking violations were issued on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
+          <mark>${d3.utcFormat("%b %d %Y")(FY.start)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(FY.end)}</mark> 
+          (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the time). `,
+        //   `There were <mark>${data.length}</mark> violations recorded`,
+        //   ` for street <mark>${street}</mark> `,
+        //   ` for addresses <mark>${houseStart}-${houseEnd}</mark>`,
+        //   (validIntersections.length == 0 ? "" :` or <mark>${validIntersections.length}</mark> intersecting streets`),
+        //   `. `
         ]
 
         if (data.length > 0 ) {
@@ -629,6 +647,10 @@ function queryNYCOpenData() {
                 summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> violations. `)
             })
         }
+        if (nonParkingData.length > 0) {
+            summaryParagraphs.push(`There were <mark>${nonParkingData.length}</mark> non-parking violations issued.`)
+        }
+
         summary.innerHTML = summaryParagraphs.join("")
 
         
@@ -639,7 +661,7 @@ function queryNYCOpenData() {
             Xmin: FY.start,
             Xmax: FY.end,
             // color: d3.scaleSequential([0, maxVal], d3.interpolateSpectral),
-            color: d3.scaleSequential([0, maxVal], d3.interpolateHcl("#fafa6e", "#2A4858")),
+            color: d3.scaleSequential([1, maxVal], d3.interpolateHcl("#fafa6e", "#2A4858")),
             emptyColor: "#f3f3f3",
             weekday:"sunday",
             width:900,
