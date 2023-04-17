@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>How is NYC Parking Enforcement?</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/css/selectize.default.min.css"
+    integrity="sha512-pTaEn+6gF1IeWv3W1+7X7eM60TFu/agjgoHmYhAfLEU8Phuf6JKiiE8YmsNC0aCgQv4192s4Vai8YZ6VNM6vyQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  />
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/selectize.js/0.15.2/js/selectize.min.js"
+    integrity="sha512-IOebNkvA/HZjMM7MxL0NYeLYEalloZ8ckak+NDtOViP7oiYzG5vn6WVXyrJDiJPhl4yRdmNAG49iuLmhkUdVsQ=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"
+  ></script>
+    <style>
+        body {
+            background-color:rgb(255, 217, 0);
+
+        }
+    .table-xsm {
+        font-size:80%;
+    }
+    .table-xsm>:not(caption)>*>* {
+        padding: 0.1rem 0.1rem;
+    }
+    .summary {
+        line-height: 1.7rem;
+    }
+    footer {
+    text-align: center;
+    font-size: .75rem;
+    color: #999;
+    padding: 2rem 1rem;
+    }
+    footer a:link, footer a:visited {
+    color: #777;
+    }
+    footer p {
+    margin-bottom: .5rem;
+    }
+    .table-striped>tbody>tr.non-parking-violation > td {
+        color:#999;
+    }
+</style>
+</head>
+<body>
+
+<div class="container mt-5">
+
+    <div class="row">
+        <div class="col-12 col-lg-8">
+        <h1>How is NYC Parking Enforcement?</h1>
+        <p>Is NYPD Traffic's parking enforcement consistent and rigerous on your block? Check!</p>
+        <p class="fw-light">This tool shows a calendar heatmap with the number of parking violations written on a particular date. 
+            NYC has low quality routine parking enforcement by NYPD Traffic, and this tool is to help hold them accountable to more rigerous parking enforcement.</p>
+        <p class="fw-light">This visiualization uses data from 
+            <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2023/pvqr-7yc4" class="text-dark">Parking Violations Issued - Fiscal Year 2023</a>. 
+            Data quality varies significantly by the agency writting parking violation, and is updated monthly. 
+            Many tickets (especially those issued by NYPD Precints) are written under multiple variations of a street name.</p>
+        <hr>
+        </div>
+    </div>
+
+    <div class="row">
+
+    <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
+        <!-- <h2>Violation Lookup</h2> -->
+
+        <form>
+    <div class="mb-2">
+        <label for="borough-select">Borough</label>
+        <select id="borough-select">
+            <option value="Manhattan" selected>Manhattan</option>
+            <option value="Bronx">Bronx</option>
+            <option value="Queens">Queens</option>
+            <option value="Brooklyn">Brooklyn</option>
+            <option value="Staten Island">Staten Island</option>
+        </select>
+    </div>
+    <div class="mb-2">
+        <label for="agency-select">Issuing Agency</label>
+        <select id="agency-select">
+            <option value="all">All</option>
+            <option value="T">Traffic</option>
+            <option value="P">Police Department</option>
+            <option value="S">Sanitation</option>
+            <!-- <option value="K">Parks</option> -->
+            <!-- <option value="V">DOT</option> -->
+        </select>
+    </div>
+    <div class="mb-2">
+        <label for="street-select">Street:</label>
+        <select id="street-select" multiple>
+            <!-- <option value="">--Loading--</option> -->
+        </select>
+        <div class="form-text">
+            ⚠️ Warning: Streets may be listed multiple times with different naming variations.
+        </div>
+    </div>
+    <div class="mb-2 cross-streets-row" id="cross-streets-container">
+        Cross Streets
+        <div id="cross-streets">
+
+        </div>
+    </div>
+    <div class="mb-2">
+        House numbers (inclusive) <input type="text" id="house-start" value="300" size="4"> to <input type="text" id="house-end" value="399" size="4">
+    </div>
+    <div class="row bg-light pt-3 rounded-bottom-3">
+    <div class="mb-2">
+        <button id="query-button" type="submit" class="btn btn-info">Search</button>
+    </div>
+</div>
+    </form>
+    </div>
+</div>
+
+<div id="report-data" class="row mb-5"></div>
+<div class="row mb-2 text-muted fw-light">
+    <div class="col-lg-8">
+        <p>Methodlogy: Streets with less than 3 summonses issued are excluded from street selection. Records that are missing a street, violation_county or have issue_dates before the start of the fiscal year (July 1st) or after the current date (in the future) are also excluded.</p>
+    </div>
+</div>
+<div class="row">
+    <footer>
+        <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
+        <p>Data from <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2023/pvqr-7yc4">NYC Open Data</a></p>
+    </footer>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.8.3/dist/d3.min.js" integrity="sha256-z9jvEmgHGEfWO4rPfEXUGKFd6UkxkavfJ0zf3qT31O4=" crossorigin="anonymous"></script>
+
+<script type="module">
+
+
+
+//   from https://gist.github.com/tophtucker/87f02769353208d625c4762a02a3ad55
+    import {Runtime} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@5/dist/runtime.js";
+    import d3_Legend from "https://api.observablehq.com/@d3/color-legend.js?v=3";
+    // import d3_HorizontalBarChart from "https://api.observablehq.com/@d3/horizontal-bar-chart.js?v=3";
+
+    import FYCalendar from "./static/fy_calendar.js"
+
+    const runtime = new Runtime()
+    const Legend = await runtime.module(d3_Legend).value("Legend");
+    // const BarChart = await runtime.module(d3_HorizontalBarChart).value("BarChart");
+
+    const parseDate = d3.utcParse("%Y-%m-%d")
+    const FYLookup = {
+      "FY2022-2023": {"dataset":"pvqr-7yc4", "start": parseDate("2022-07-01"), "end": parseDate("2023-02-23"), "name":"fy_2022"},
+      "FY2021-2022": {"dataset":"7mxj-7a6y", "start": parseDate("2021-07-01"), "end": parseDate("2022-06-30"), "name":"fy_2023"}
+    }
+    const FY = FYLookup["FY2022-2023"]
+
+    const agencyLookup = {
+        "P": "Police Department",
+        "T": "Traffic",
+        "S": "Sanitation",
+        "K": "Parks",
+    }
+
+    const boroughLookup = {
+        "Brooklyn": "bk",
+        "Queens": "qn",
+        "Manhattan": "ny",
+        "Bronx": "bx",
+        "Staten Island": "si",
+    }
+
+    let streetData = [];
+    var _checkboxIndex = 0;
+
+    function nullString(s) {
+        return s === null ? "" : s
+    }
+    function defaultString(s, d) {
+        return s === "" ? d : s
+    }
+    const dtFormat = new Intl.DateTimeFormat("en-US");
+
+    function bootstrap() {
+        // console.log("bootstrap")
+        const urlSearchParams = new URLSearchParams(window.location.search)
+        document.getElementById("borough-select").value = defaultString(nullString(urlSearchParams.get("borough")), "Manhattan")
+        document.getElementById("agency-select").value = defaultString(nullString(urlSearchParams.get("agency")), "T")
+        document.getElementById("house-start").value = defaultString(nullString(urlSearchParams.get("house-start")), "300")
+        document.getElementById("house-end").value = defaultString(nullString(urlSearchParams.get("house-end")), "399")
+
+        loadStreets(urlSearchParams.getAll("street"), urlSearchParams.getAll("intersection"));
+
+        // wrap event methods so first argument is not event
+        document.getElementById("borough-select").addEventListener("change", _ => {loadStreets()});
+        document.getElementById("agency-select").addEventListener("change", _ => {updateStreets()});
+        document.getElementById("street-select").addEventListener("change", populateIntersections);
+        document.getElementById("query-button").addEventListener("click", queryNYCOpenData);
+
+    }
+
+    function saveURLState() {
+        var qs = new URLSearchParams()
+        qs.set("borough", document.getElementById("borough-select").value)
+        Array.from(document.getElementById("street-select").selectedOptions).forEach(d=>{
+            qs.append("street", d.value)
+        })
+        Array.from(document.getElementsByName("intersecting-street-option")).filter(d => d.checked).forEach(d=>{
+            qs.append("intersection", d.value)
+        })
+        qs.set("agency", document.getElementById("agency-select").value)
+        const houseStart = document.getElementById("house-start").value
+        if (houseStart !== "") {qs.set("house-start", houseStart)}
+        const houseEnd = document.getElementById("house-end").value
+        if (houseEnd !== "") {qs.set("house-end", houseEnd)}
+        
+        const l = qs.toString();
+        history.pushState(null, document.title, l.length == 0 ? window.location.pathname : window.location.pathname + "?" + l)
+    }
+
+
+    function loadStreets(defaultStreets, defaultIntersections) {
+        // console.log("loadStreets");
+        const borough = document.getElementById("borough-select").value;
+
+        const filename = `/static/fy_2023_${boroughLookup[borough]}_intersecting_streets.tsv`
+        
+        console.log("opening", filename);
+
+        fetch(filename)
+        .then(response => response.text())
+        .then(text => {
+            streetData =  text.split('\n').map(row => {
+                const d = row.split('\t')
+                if (d.length != 4) {return}
+                if (d[0] == "street"){return}
+                return {
+                    street_name : d[0],
+                    intersecting_streets : d[1].split('|'),
+                    issuing_agencies : d[2].split('|'),
+                }
+            }).filter(d => d !== undefined)
+            updateStreets(defaultStreets, defaultIntersections)
+        })
+
+    }
+
+    function updateStreets(defaultStreets, defaultIntersections) {
+        const issuingAgency = document.getElementById("agency-select").value;
+        const streetSelect = document.getElementById("street-select");
+        const currentStreets = new Set(defaultStreets == undefined ? Array.from(streetSelect.selectedOptions).map(d=>d.value) : defaultStreets)
+        const availableStreets = new Set()
+
+        // console.log("updateStreets", streetData[0], streetData.length, "default", currentStreet);
+
+        // remove any existing options
+        while (streetSelect.firstChild) {
+            streetSelect.removeChild(streetSelect.firstChild);
+        }
+        const selectize = document.getElementById("street-select").selectize
+        if (selectize != undefined) {
+            selectize.refreshOptions();
+            selectize.clearOptions();
+        }
+
+        streetData.forEach(streetObj => {
+            // check isuing agency selection
+            if (issuingAgency != "all" && streetObj.issuing_agencies.indexOf(issuingAgency) == -1) {
+                return
+            }
+            if (selectize != undefined) {
+                selectize.addOption(streetObj)
+                if (currentStreets.has(streetObj.street_name)) {
+                    availableStreets.add(streetObj.street_name)
+                }
+            } else {
+                const option = document.createElement("option");
+                option.value = streetObj.street_name;
+                option.text = streetObj.street_name;
+                if (currentStreets.has(streetObj.street_name)) {option.selected = true}
+                streetSelect.appendChild(option);
+            }
+        });
+        if (selectize == undefined) {
+            $("#street-select").selectize({
+                plugins: ["remove_button"],
+                valueField: 'street_name',
+                labelField: 'street_name',
+                searchField: 'street_name',
+                onChange: populateIntersections,
+            })
+        } else {
+            // re-set the same options we had previously
+            selectize.refreshOptions()
+            selectize.setValue(availableStreets)
+        }
+
+        populateIntersections(defaultIntersections);
+    }
+
+    
+    // function to populate intersection options based on street selection
+    function populateIntersections(defaultIntersections) {
+        // console.log("populateCrossStreet1", defaultIntersections);
+
+        const selectedStreets = new Set( Array.from(document.getElementById("street-select").selectedOptions).map(d=>d.value));
+        const selectedIntersections = new Set(defaultIntersections == undefined ? Array.from(document.getElementsByName("intersecting-street-option")).filter(d => d.checked).map(d => d.value) : defaultIntersections)
+
+        const crossStreets = document.getElementById("cross-streets");
+        crossStreets.innerHTML = "";
+        const streets = streetData.filter(streetObj => selectedStreets.has(streetObj.street_name));
+        
+        let seen = new Set();
+        streets.forEach(streetObj => {
+            streetObj.intersecting_streets.forEach(intersectingStreet => {
+                seen.add(intersectingStreet);
+            })
+        })
+        document.getElementById("cross-streets-container").style.display = seen.size > 0 ? "block" : "none";
+
+        // TODO: sort by suffix not natural sort?
+        Array.from(seen).sort().forEach(intersectingStreet => {
+            const div = document.createElement("div")
+            div.className = "form-check form-check-inline"
+            const label = document.createElement("label")
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox"
+            checkbox.name = "intersecting-street-option"
+            checkbox.className = "form-check-input"
+            checkbox.value = intersectingStreet;
+            checkbox.id = "intersection-" + (++_checkboxIndex)
+            if (selectedIntersections.has(intersectingStreet)) {
+                checkbox.checked = true
+            }
+            div.appendChild(checkbox)
+            label.className = "form-check-label"
+            label.htmlFor = "intersection-" + _checkboxIndex
+            label.appendChild(document.createTextNode(intersectingStreet))
+            // label.class="me-2"
+            div.appendChild(label);
+            crossStreets.appendChild(div)
+            // TODO: change listener
+        });
+        showQueryButton(); // temp
+    }
+
+    function showQueryButton() {
+        document.getElementById("query-button").style.display = "block";
+    }
+    
+// function to query NYC Open Data and render D3 calendar chart
+function queryNYCOpenData() {
+    event.preventDefault();
+    saveURLState();
+
+
+    const street = Array.from(document.getElementById("street-select").selectedOptions).map(d => d.value);
+    const issuingAgency = document.getElementById("agency-select").value;
+    const borough = document.getElementById("borough-select").value;
+    const houseStart = parseInt(document.getElementById("house-start").value, 10);
+    const houseEnd = parseInt(document.getElementById("house-end").value, 10);
+    const validIntersections = Array.from(document.getElementsByName("intersecting-street-option")).filter(d => d.checked).map(d => d.value)
+
+    fetch("/", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            FiscalYear: FY.name,
+            Borough: borough,
+            Agency: issuingAgency,
+            HouseStart: isNaN(houseStart) ? 0: houseStart,
+            HouseEnd: isNaN(houseEnd) ? 0: houseEnd,
+            Streets: street,
+            Intersections: validIntersections,
+        }),
+        })
+    .then(response => {
+        if (!response.ok) {
+        throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Updated object state:', data);
+        location.href=data.URL;
+    })
+    .catch(error => {
+        console.error('Error updating object state:', error);
+    });
+
+
+};
+
+document.getElementById("query-button").addEventListener("submit", function(evt) {
+        event.preventDefault();
+        return false;
+    }, true);
+
+    bootstrap();
+    </script>
+</body>
+</html>
