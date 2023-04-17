@@ -247,12 +247,17 @@ func main() {
 	app := &App{
 		devMode:       *devMode,
 		firestore:     createClient(ctx),
-		staticHandler: http.FileServer(http.FS(static)),
 		templateFS:    content,
 	}
 	if *devMode {
 		app.templateFS = os.DirFS(".")
 		app.staticHandler = http.StripPrefix("/static/", http.FileServer(http.Dir("www")))
+	} else {
+		d, err := fs.Sub(static, "www")
+		if err != nil {
+			log.Panic(err)
+		}
+		app.staticHandler = http.StripPrefix("/static/", http.FileServer(http.FS(d)))
 	}
 
 	// Determine port for HTTP service.
