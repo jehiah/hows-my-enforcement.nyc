@@ -35,21 +35,35 @@
     .table-striped>tbody>tr.non-parking-violation > td {
         color:#999;
     }
+    h1 > a {
+        text-decoration: none;
+        color:inherit;
+    }
+    h1 > a:hover {
+        text-decoration: underline;
+        color:inherit;
+    }
+    .table>thead>tr>th:first-child, .table>tbody>tr>td:first-child {
+        padding-left: .5rem;
+    }
+    .agency { display: none;}
+    @media (min-width: 768px) { 
+        .agency { display: table-cell; }
+    }
+
 </style>
 </head>
-<body>
+<body class="">
 
-<div class="container mt-5">
+<div class="container mt-2 mt-lg-5 px-3">
 
     <div class="row">
         <div class="col-12 col-lg-8">
         <h1><a href="/">How is NYC Parking Enforcement?</a></h1>
-        <p>Is NYPD Traffic's parking enforcement consistent and rigerous on your block? Check!</p>
-        <p class="fw-light">Quantity doesn't equal quality. NYPD Traffic should provide consistent regerous enforcement of parking regulations. Compare statistics on violations written to quality surveys of on-street conditions to determine how many violations should be issued.</p>
-        <hr>
+        <p>Is NYPD Traffic's parking enforcement consistent and rigerous on your block? <a href="/">Check</a>!</p>
+        <p class="fw-light">Quantity doesn't equal quality. NYPD Traffic should provide consistent regerous enforcement of parking regulations.</p>
         </div>
     </div>
-
 
 <div id="report-data" class="row mb-5"></div>
 
@@ -214,7 +228,7 @@ function queryNYCOpenData() {
 
     document.getElementById("report-data").innerHTML = ''
     const el = document.createElement("div");
-    el.className = "row my-2 py-2 bg-white";
+    el.className = "col-12 my-2 py-2 bg-white";
     document.getElementById("report-data").appendChild(el)
     const heading = document.createElement("h2")
     heading.innerText = `Violations on ${houseStart}-${houseEnd} ${street}`
@@ -468,7 +482,7 @@ function queryNYCOpenData() {
         // el.appendChild(container)
 
         let debugQuery = el.appendChild(document.createElement("div"))
-        debugQuery.className = "mb-2"
+        debugQuery.className = "query mb-2 lh-sm"
         debugQuery.innerHTML=displayFilters.map(d=>`<code>${d}</code><br>`).join("\n")
 
 
@@ -481,7 +495,9 @@ function queryNYCOpenData() {
         tr.appendChild(document.createElement("th")).innerText = "Date"
         tr.appendChild(document.createElement("th")).innerText = "License"
         tr.appendChild(document.createElement("th")).innerText = "Location"
-        tr.appendChild(document.createElement("th")).innerText = "Agency"
+        let cell = tr.appendChild(document.createElement("th"))
+        cell.className = groupByAgency.length > 1 ? "agencies": "agency"
+        cell.innerText = "Agency"
         tr.appendChild(document.createElement("th")).innerText = "Violation"
 
         const tbody = table.appendChild(document.createElement("tbody"))
@@ -493,7 +509,9 @@ function queryNYCOpenData() {
             cell.innerText = d.registration_state + ":" + d.plate_id 
             cell.className = "font-monospace"
             tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street == "" ? "":  " @ " + d.intersecting_street)
-            tr.appendChild(document.createElement("td")).innerText = agencyLookup[d.issuing_agency]
+            cell = tr.appendChild(document.createElement("td"))
+            cell.className = groupByAgency.length > 1 ? "agencies": "agency"
+            cell.innerText = agencyLookup[d.issuing_agency]
             tr.appendChild(document.createElement("td")).innerText = ViolationCodes[d.violation_code]
         })
         el.appendChild(table)
