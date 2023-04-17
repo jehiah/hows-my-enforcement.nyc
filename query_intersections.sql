@@ -13,7 +13,7 @@ END as county,
   count(*) as number_violations
 FROM `jehiah-p1.opendata.parking_violations_fy_2023_pvqr_7yc4`
 WHERE 
-issuing_agency in ('T','P','S','K')
+issuing_agency in ('T','P','S')
 and issue_date is not null
 and issue_date between '2022-07-01' and CURRENT_DATE
 and street_name is not null

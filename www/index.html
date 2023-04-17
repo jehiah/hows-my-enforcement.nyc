@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>NYC Open Data Selector</title>
+    <title>How is NYC Parking Enforcement?</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.4/jquery.min.js" integrity="sha512-pumBsjNRGGqkPzKHndZMaAG+bir374sORyzM3uulLV14lN5LyykqNk8eEeUlUkB3U0M4FApyaHraT65ihJhDpQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
@@ -46,6 +46,9 @@
     footer p {
     margin-bottom: .5rem;
     }
+    .table-striped>tbody>tr.non-parking-violation > td {
+        color:#999;
+    }
 </style>
 </head>
 <body>
@@ -55,7 +58,7 @@
     <div class="row">
         <div class="col-12 col-lg-8">
         <h1>How is NYC Parking Enforcement?</h1>
-        <p>Is parking enforcement consistent and rigerous on your block? Check!</p>
+        <p>Is NYPD Traffic's parking enforcement consistent and rigerous on your block? Check!</p>
         <p class="fw-light">This tool shows a calendar heatmap with the number of parking violations written on a particular date. 
             NYC has low quality routine parking enforcement by NYPD Traffic, and this tool is to help hold them accountable to more rigerous parking enforcement.</p>
         <p class="fw-light">This visiualization uses data from 
@@ -89,7 +92,7 @@
             <option value="T">Traffic</option>
             <option value="P">Police Department</option>
             <option value="S">Sanitation</option>
-            <option value="K">Parks</option>
+            <!-- <option value="K">Parks</option> -->
             <!-- <option value="V">DOT</option> -->
         </select>
     </div>
@@ -138,7 +141,10 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7.8.3/dist/d3.min.js" integrity="sha256-z9jvEmgHGEfWO4rPfEXUGKFd6UkxkavfJ0zf3qT31O4=" crossorigin="anonymous"></script>
 
 <script type="module">
-    //   from https://gist.github.com/tophtucker/87f02769353208d625c4762a02a3ad55
+
+
+
+//   from https://gist.github.com/tophtucker/87f02769353208d625c4762a02a3ad55
     import {Runtime} from "https://cdn.jsdelivr.net/npm/@observablehq/runtime@5/dist/runtime.js";
     import d3_Legend from "https://api.observablehq.com/@d3/color-legend.js?v=3";
     // import d3_HorizontalBarChart from "https://api.observablehq.com/@d3/horizontal-bar-chart.js?v=3";
@@ -266,6 +272,14 @@
         "K": "Parks",
     }
 
+    const boroughLookup = {
+        "Brooklyn": "bk",
+        "Queens": "qn",
+        "Manhattan": "ny",
+        "Bronx": "bx",
+        "Staten Island": "si",
+    }
+
     let streetData = [];
     var _checkboxIndex = 0;
 
@@ -275,6 +289,7 @@
     function defaultString(s, d) {
         return s === "" ? d : s
     }
+    const dtFormat = new Intl.DateTimeFormat("en-US");
 
     function bootstrap() {
         // console.log("bootstrap")
@@ -318,38 +333,23 @@
         // console.log("loadStreets");
         const borough = document.getElementById("borough-select").value;
 
-        let filename = ""
-        switch (borough) {
-            case "Brooklyn":
-                filename = "bk_intersecting_streets.json"
-                break;
-            case "Manhattan":
-                filename = "ny_intersecting_streets.json"
-                break;
-            case "Bronx":
-                filename = "bx_intersecting_streets.json"
-                break;
-            case "Queens":
-                filename = "qn_intersecting_streets.json"
-                break;
-            case "Staten Island":
-                filename = "si_intersecting_streets.json"
-                break;
-        }
+        const filename = `fy_2023_${boroughLookup[borough]}_intersecting_streets.tsv`
         
         console.log("opening", filename);
 
         fetch(filename)
-        .then(response => response.json())
-        .then(d => {
-            streetData = d.map(d => {
+        .then(response => response.text())
+        .then(text => {
+            streetData =  text.split('\n').map(row => {
+                const d = row.split('\t')
+                if (d.length != 4) {return}
+                if (d[0] == "street"){return}
                 return {
-                    street_name : d.st,
-                    issuing_agencies : d.a,
-                    // borough : d.c,
-                    intersecting_streets : d.i
+                    street_name : d[0],
+                    intersecting_streets : d[1].split('|'),
+                    issuing_agencies : d[2].split('|'),
                 }
-            })
+            }).filter(d => d !== undefined)
             updateStreets(defaultStreets, defaultIntersections)
         })
 
@@ -493,14 +493,6 @@ function queryNYCOpenData() {
     let displayFilters = [
       `issue_date between ${dateFormat(FY.start)} and ${dateFormat(FY.end)}`,
     ];
-    if (!isNaN(houseStart) && !isNaN(houseEnd)) {
-        displayFilters.push(`house_number between ${houseStart} and ${houseEnd}`)
-    }
-    if (validIntersections.length > 1 ) {
-        displayFilters.push(`OR intersecting_street endswith one of ('${validIntersections.join("', '")}')`)
-    } else if (validIntersections.length == 1 ) {
-        displayFilters.push(`OR intersecting_street endswith '${validIntersections[0]}'`)
-    }
 
     if (street.length == 0) {
         let err = el.appendChild(document.createElement("div"));
@@ -510,32 +502,50 @@ function queryNYCOpenData() {
         return;
     } else if (street.length == 1) {
         filters.push(`street_name="${street[0]}"`)
+        displayFilters.push(`street_name="${street[0]}"`)
     } else {
         filters.push(`street_name in ('${street.join("','")}')`)
+        displayFilters.push(`street_name in ('${street.join("','")}')`)
     }
-     
+
+    if (!isNaN(houseStart) && !isNaN(houseEnd)) {
+        displayFilters.push(`house_number between ${houseStart} and ${houseEnd}`)
+    }
+    if (validIntersections.length > 1 ) {
+        displayFilters.push(`OR intersecting_street endswith one of ('${validIntersections.join("', '")}')`)
+    } else if (validIntersections.length == 1 ) {
+        displayFilters.push(`OR intersecting_street endswith '${validIntersections[0]}'`)
+    }
+
     switch (borough) {
         case "Brooklyn":
             filters.push(`violation_county in ('BK', 'K', 'Kings')`)
+            displayFilters.push(`violation_county in ('BK', 'K', 'Kings') // Brooklyn`)
             break;
         case "Manhattan":
             filters.push(`violation_county in ('NY', 'MN')`)
+            displayFilters.push(`violation_county in ('NY', 'MN') // Manhattan`)
             break;
         case "Bronx":
-        filters.push(`violation_county in ('BX', 'Bronx')`)
+            filters.push(`violation_county in ('BX', 'Bronx')`)
+            displayFilters.push(`violation_county in ('BX', 'Bronx') // Bronx`)
             break;
         case "Queens":
             filters.push(`violation_county in ('Q', 'QN', 'Qns')`)
+            displayFilters.push(`violation_county in ('Q', 'QN', 'Qns') // Queens`)
             break;
         case "Staten Island":
             filters.push(`violation_county in ('R', 'Rich', 'ST')`)
+            displayFilters.push(`violation_county in ('R', 'Rich', 'ST') // Staten Island`)
             break;
     }
 
     if (issuingAgency != "all") {
         filters.push(`issuing_agency='${issuingAgency}'`)
+        displayFilters.push(`issuing_agency='${issuingAgency}' // ${agencyLookup[issuingAgency]}`)
     } else {
-        filters.push(`issuing_agency in ('T','P','S','K')`)
+        filters.push(`issuing_agency in ('T','P','S')` )
+        displayFilters.push(`issuing_agency in ('T','P','S') // Traffic, NYPD, Sanitation` )
     }
     const queryString = `&$where=${filters.join(" AND ")}`
     const fullUrl = `${url}${queryString}`;
@@ -580,8 +590,8 @@ function queryNYCOpenData() {
                 d.issue_date.setUTCMinutes(violation_time.getUTCMinutes())
                 d.violation_time = dtFormatHour.format(d.issue_date)
             }
-
         })
+
         data.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
 
         data = data.filter( d=> { 
@@ -599,19 +609,26 @@ function queryNYCOpenData() {
 
         // group data by issue_date
         const groupByDate = d3.rollups(parkingData, v => v.length, d => d3.utcDay(d.issue_date));
+        let topDate = undefined;
+        let topDateCount = undefined;
         if (groupByDate.length > 0) {
-            const topDate = d3.greatest(groupByDate, ([, v]) => v)[0];
-            const topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
+            topDate = d3.greatest(groupByDate, ([, v]) => v)[0];
+            topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
         }
 
         const violationsByDay = groupByDate.map(([k,v]) => {return {date:k, count:v}})
         const groupOfDate = violationsByDay.map(d => d.date.toDateString())
+        // extend to include zero counts for empty days
         violationsByDay.push(... d3.utcDay.range(FY.start, FY.end).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, count:0}}))
 
         const groupByAgency = d3.rollups(parkingData, v => v.length, d => d.issuing_agency);
         const groupByViolation = d3.rollups(parkingData, v => v.length, d => d.violation_code);
-        const topViolation = d3.greatest(groupByViolation, ([, v]) => v)[0];
-        const topViolationCount = d3.greatest(groupByViolation, ([, v]) => v)[1];
+        let topViolation = undefined
+        let topViolationCount = undefined
+        if (groupByViolation.length > 1) {
+            topViolation = d3.greatest(groupByViolation, ([, v]) => v)[0];
+            topViolationCount = d3.greatest(groupByViolation, ([, v]) => v)[1];
+        }
         const dtFormatLong = new Intl.DateTimeFormat("en-US", {
             weekday: "short",
             year: "numeric",
@@ -622,13 +639,16 @@ function queryNYCOpenData() {
 
         const maxVal = d3.max(violationsByDay, d=> d.count)
 
-        const summary = el.appendChild(document.createElement("p"))
+        let summary = el.appendChild(document.createElement("p"))
         summary.className="summary"
-
-        let summaryParagraphs = [
-          `<mark>${parkingData.length}</mark> parking violations were issued on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
+        summary.innerHTML = `<mark>${parkingData.length}</mark> parking violations were issued on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
           <mark>${d3.utcFormat("%b %d %Y")(FY.start)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(FY.end)}</mark> 
-          (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the time). `,
+          (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days). `
+
+
+        summary = el.appendChild(document.createElement("p"))
+        summary.className="summary"
+                let summaryParagraphs = [
         //   `There were <mark>${data.length}</mark> violations recorded`,
         //   ` for street <mark>${street}</mark> `,
         //   ` for addresses <mark>${houseStart}-${houseEnd}</mark>`,
@@ -636,19 +656,19 @@ function queryNYCOpenData() {
         //   `. `
         ]
 
-        if (data.length > 0 ) {
+        if (parkingData.length > 0 ) {
             if (groupByDate.length > 1) {
-                summaryParagraphs.push(`The most violations (<mark>${topDateCount}</mark>) where issued on <mark>${dtFormatLong.format(topDate)}</mark>. `)
+                summaryParagraphs.push(`<mark>${dtFormatLong.format(topDate)}</mark> had the most parking violations issuesd (<mark>${topDateCount}</mark>). `)
             }
-            summaryParagraphs.push(`The most common violation was <mark>${ViolationCodes[topViolation]}</mark> issued <mark>${topViolationCount}</mark> times. `)
+            summaryParagraphs.push(`The most common violation was <mark>${ViolationCodes[topViolation]}</mark> (issued <mark>${topViolationCount}</mark> times). `)
+        }
+        if (nonParkingData.length > 0) {
+            summaryParagraphs.push(`There was <mark>${nonParkingData.length}</mark> non-parking violations issued.`)
         }
         if (groupByAgency.length > 1) {
             groupByAgency.sort((a, b) => d3.descending(a[1], b[1])).forEach(([agency, count]) => {
-                summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> violations. `)
+                summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> parking violations (<mark>${d3.format("0.1%")(count/parkingData.length)}</mark>). `)
             })
-        }
-        if (nonParkingData.length > 0) {
-            summaryParagraphs.push(`There were <mark>${nonParkingData.length}</mark> non-parking violations issued.`)
         }
 
         summary.innerHTML = summaryParagraphs.join("")
@@ -669,7 +689,10 @@ function queryNYCOpenData() {
             cellSize: 17,
             cellPadding: 2,
             monthPadding: 17 + 2,
-            formatMonth: "%b %Y"
+            formatMonth: "%b %Y",
+            // title: d => d.count
+            // todo: https://medium.com/@kj_schmidt/show-data-on-mouse-over-with-d3-js-3bf598ff8fc2
+            title: d => d.count > 0 ? `${dtFormat.format(d.date)}: ${d.count}` : ""
         })
 
 
@@ -703,9 +726,6 @@ function queryNYCOpenData() {
         // el.appendChild(container)
 
         let debugQuery = el.appendChild(document.createElement("div"))
-        // debugQuery.className = "mb-2"
-        debugQuery.innerHTML=filters.map(d=>`<code>${d}</code><br>`).join("\n")
-        debugQuery = el.appendChild(document.createElement("div"))
         debugQuery.className = "mb-2"
         debugQuery.innerHTML=displayFilters.map(d=>`<code>${d}</code><br>`).join("\n")
 
@@ -723,9 +743,9 @@ function queryNYCOpenData() {
         tr.appendChild(document.createElement("th")).innerText = "Violation"
 
         const tbody = table.appendChild(document.createElement("tbody"))
-        const dtFormat = new Intl.DateTimeFormat("en-US");
         data.forEach(d => {
             const tr = tbody.appendChild(document.createElement("tr"))
+            tr.className = nonParkingViolations.has(d.violation_code) ? "non-parking-violation" : "parking-violation"
             tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time // TODO format
             let cell = tr.appendChild(document.createElement("td"))
             cell.innerText = d.registration_state + ":" + d.plate_id 
