@@ -243,8 +243,8 @@ function queryNYCOpenData() {
     el.appendChild(spinner)
 
 
-    // TODO: violation_time, summons_number
-    const url = "https://data.cityofnewyork.us/resource/pvqr-7yc4.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=20000";
+    // TODO: summons_number
+    const url = "https://data.cityofnewyork.us/resource/pvqr-7yc4.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=75000";
     let filters = [];
     const dateFormat = d3.utcFormat("%Y-%m-%d")
     let displayFilters = [
@@ -336,6 +336,9 @@ function queryNYCOpenData() {
             hour12: true,
             timeZone: "UTC",
         });
+        if (data.length == 75000) {
+            alert("⚠️ The Open Data Query returned the maximum results. Data is truncated. Narrow the street selection for complete results.")
+        }
         data.forEach(function(d) {
             d.issue_date = parseDate(d.issue_date);
             d.count = 1
