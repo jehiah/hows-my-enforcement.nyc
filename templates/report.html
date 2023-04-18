@@ -84,6 +84,7 @@
 
 <script type="module">
     import FYCalendar from "./static/fy_calendar.js"
+    import Punchcard from "./static/punchcard.js"
 
     const report = {{.Report}}
 
@@ -463,10 +464,36 @@ function queryNYCOpenData() {
         el.removeChild(spinner)
         el.appendChild(container)
 
+
         container = document.createElement("div")
         container.className = "calendar-chart mb-4"
         container.appendChild(calendarChart)
         el.appendChild(container)
+
+        if (parkingData.length > 0) {
+            // create calendar chart
+            const punchcard = Punchcard(parkingData, {
+                x: d => d.issue_date,
+                y: d => d.count,
+                // color: d3.scaleSequential([0, maxVal], d3.interpolateSpectral),
+                color: d3.interpolateHcl("rgb(71, 184, 135)", "#2A4858"),
+                emptyColor: "#aaa",
+                weekday:"sunday",
+                // width:(25 + (22+1) * 24),
+                // yFormat: "%d",
+                cellSize: 22,
+                cellPadding: 1,
+                // formatMonth: "%b %Y",
+                // title: d => d.count
+                // todo: https://medium.com/@kj_schmidt/show-data-on-mouse-over-with-d3-js-3bf598ff8fc2
+                // title: d => d.count > 0 ? `${dtFormat.format(d.date)}: ${d.count}` : ""
+            })
+            container = document.createElement("div")
+            container.className = "punchcard-chart mb-4"
+            container.appendChild(punchcard)
+            el.appendChild(container)
+        }
+
 
         // container = document.createElement("div")
         // container.className = "agency-chart"
