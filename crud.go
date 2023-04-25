@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -20,8 +21,13 @@ type Report struct {
 	Intersections        []string
 	UID                  account.UID
 	Created              time.Time
+	PreviewImage         string
 }
 type ReportID string
+
+func (id ReportID) String() string {
+	return string(id)
+}
 
 func IsValidReportID(r ReportID) bool {
 	return len(string(r)) > 1
@@ -29,6 +35,20 @@ func IsValidReportID(r ReportID) bool {
 
 func (r Report) Link() string {
 	return "/" + string(r.ID)
+}
+
+func (r Report) PublicPreview() string {
+	if r.PreviewImage == "" {
+		return ""
+	}
+	return "https://storage.cloud.google.com/hows-my-enforcement-nyc/" + r.PreviewImage
+}
+
+func (r Report) Description() string {
+	if len(r.Streets) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("Violations on %d-%d %s", r.HouseStart, r.HouseEnd, r.Streets[0])
 }
 
 func (a *App) GetReport(ctx context.Context, ID ReportID) (*Report, error) {

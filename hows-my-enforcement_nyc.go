@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
+	"cloud.google.com/go/storage"
 	"firebase.google.com/go/v4/auth"
 	"github.com/gorilla/handlers"
 	"github.com/jehiah/hows-my-enforcement.nyc/internal/account"
@@ -32,6 +33,7 @@ type App struct {
 	devMode   bool
 	firestore *firestore.Client
 	firebase  *auth.Client
+	storage   *storage.BucketHandle
 
 	staticHandler http.Handler
 	templateFS    fs.FS
@@ -177,10 +179,12 @@ func (a *App) Report(w http.ResponseWriter, r *http.Request, id ReportID) {
 	}
 
 	type Page struct {
-		Report Report
+		Report      Report
+		SavePreview bool
 	}
 	body := Page{
-		Report: *report,
+		Report:      *report,
+		SavePreview: a.devMode || report.PreviewImage == "",
 	}
 
 	err = t.ExecuteTemplate(w, "report.html", body)
@@ -219,6 +223,11 @@ func (app App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			app.IndexPost(w, r)
 			return
 		}
+	case "PUT":
+		if p := ReportID(strings.TrimPrefix(r.URL.Path, "/")); IsValidReportID(p) {
+			app.SaveReportPreview(w, r, p)
+			return
+		}
 	default:
 		http.Error(w, "Invalid Method", http.StatusMethodNotAllowed)
 		return
@@ -243,11 +252,15 @@ func main() {
 
 	log.Print("starting server...")
 	ctx := context.Background()
-
+	client, err := storage.NewClient(ctx)
+	if err != nil {
+		log.Panic(err)
+	}
 	app := &App{
-		devMode:       *devMode,
-		firestore:     createClient(ctx),
-		templateFS:    content,
+		devMode:    *devMode,
+		firestore:  createClient(ctx),
+		templateFS: content,
+		storage:    client.Bucket("hows-my-enforcement-nyc"),
 	}
 	if *devMode {
 		app.templateFS = os.DirFS(".")
