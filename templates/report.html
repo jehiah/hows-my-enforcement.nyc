@@ -401,7 +401,7 @@ function queryNYCOpenData() {
         const groupByViolation = d3.rollups(parkingData, v => v.length, d => d.violation_code);
         let topViolation = undefined
         let topViolationCount = undefined
-        if (groupByViolation.length > 1) {
+        if (groupByViolation.length >= 1) {
             topViolation = d3.greatest(groupByViolation, ([, v]) => v)[0];
             topViolationCount = d3.greatest(groupByViolation, ([, v]) => v)[1];
         }
@@ -436,9 +436,7 @@ function queryNYCOpenData() {
             if (groupByDate.length > 1) {
                 summaryParagraphs.push(`<mark>${dtFormatLong.format(topDate)}</mark> had the most parking violations issuesd (<mark>${topDateCount}</mark>). `)
             }
-            if (groupByViolation.length > 1) {
-                summaryParagraphs.push(`The most common violation was <mark>${ViolationCodes[topViolation]}</mark> (issued <mark>${topViolationCount}</mark> times). `)
-            }
+            summaryParagraphs.push(`The most common violation was <mark>${ViolationCodes[topViolation]}</mark> (issued <mark>${topViolationCount}</mark> times). `)
         }
         if (nonParkingData.length > 0) {
             summaryParagraphs.push(`There was <mark>${nonParkingData.length}</mark> non-parking violations issued.`)
