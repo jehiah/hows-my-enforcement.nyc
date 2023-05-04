@@ -436,7 +436,9 @@ function queryNYCOpenData() {
             if (groupByDate.length > 1) {
                 summaryParagraphs.push(`<mark>${dtFormatLong.format(topDate)}</mark> had the most parking violations issuesd (<mark>${topDateCount}</mark>). `)
             }
-            summaryParagraphs.push(`The most common violation was <mark>${ViolationCodes[topViolation]}</mark> (issued <mark>${topViolationCount}</mark> times). `)
+            if (groupByViolation.length > 1) {
+                summaryParagraphs.push(`The most common violation was <mark>${ViolationCodes[topViolation]}</mark> (issued <mark>${topViolationCount}</mark> times). `)
+            }
         }
         if (nonParkingData.length > 0) {
             summaryParagraphs.push(`There was <mark>${nonParkingData.length}</mark> non-parking violations issued.`)
