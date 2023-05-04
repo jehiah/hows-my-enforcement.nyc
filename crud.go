@@ -41,7 +41,7 @@ func (r Report) PublicPreview() string {
 	if r.PreviewImage == "" {
 		return ""
 	}
-	return "https://storage.cloud.google.com/hows-my-enforcement-nyc/" + r.PreviewImage
+	return "https://storage.googleapis.com/hows-my-enforcement-nyc/" + r.PreviewImage
 }
 
 func (r Report) Description() string {
