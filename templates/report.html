@@ -417,14 +417,20 @@ function queryNYCOpenData() {
 
         let summary = el.appendChild(document.createElement("p"))
         summary.className="summary"
-        summary.innerHTML = `<mark>${parkingData.length}</mark> parking violations were issued on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
+        let summaryParagraphs = [
+            `<mark>${parkingData.length}</mark> parking violations were issued`,
+            issuingAgency != "all" ? ` by <mark>${agencyLookup[issuingAgency]}</mark> `: "",
+            ` on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
           <mark>${d3.utcFormat("%b %d %Y")(FY.start)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(FY.end)}</mark> 
           (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days). `
+        ]
+
+        summary.innerHTML = summaryParagraphs.join("")
 
 
         summary = el.appendChild(document.createElement("p"))
         summary.className="summary"
-                let summaryParagraphs = [
+        summaryParagraphs = [
         //   `There were <mark>${data.length}</mark> violations recorded`,
         //   ` for street <mark>${street}</mark> `,
         //   ` for addresses <mark>${houseStart}-${houseEnd}</mark>`,
@@ -441,6 +447,7 @@ function queryNYCOpenData() {
         if (nonParkingData.length > 0) {
             summaryParagraphs.push(`There was <mark>${nonParkingData.length}</mark> non-parking violations issued.`)
         }
+        // TODO: use the filter not the results
         if (groupByAgency.length > 1) {
             groupByAgency.sort((a, b) => d3.descending(a[1], b[1])).forEach(([agency, count]) => {
                 summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> parking violations (<mark>${d3.format("0.1%")(count/parkingData.length)}</mark>). `)
