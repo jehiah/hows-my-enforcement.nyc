@@ -267,7 +267,7 @@ function queryNYCOpenData() {
       `issue_date between ${dateFormat(FY.start)} and ${dateFormat(FY.end)}`,
     ];
 
-    if (street.length == 0) {
+    if (street == null || street.length == 0) {
         let err = el.appendChild(document.createElement("div"));
         err.className="alert"
         err.innerText="Error: street not selected"
