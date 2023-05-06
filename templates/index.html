@@ -71,19 +71,8 @@
     <div class="row">
 
     <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
-        <!-- <h2>Violation Lookup</h2> -->
 
-        <form>
-    <div class="mb-2">
-        <label for="borough-select">Borough</label>
-        <select id="borough-select">
-            <option value="Manhattan" selected>Manhattan</option>
-            <option value="Bronx">Bronx</option>
-            <option value="Queens">Queens</option>
-            <option value="Brooklyn">Brooklyn</option>
-            <option value="Staten Island">Staten Island</option>
-        </select>
-    </div>
+    <form>
     <div class="mb-2">
         <label for="agency-select">Issuing Agency</label>
         <select id="agency-select">
@@ -96,9 +85,18 @@
         </select>
     </div>
     <div class="mb-2">
+        <label for="borough-select">Borough</label>
+        <select id="borough-select">
+            <option value="Manhattan" selected>Manhattan</option>
+            <option value="Bronx">Bronx</option>
+            <option value="Queens">Queens</option>
+            <option value="Brooklyn">Brooklyn</option>
+            <option value="Staten Island">Staten Island</option>
+        </select>
+    </div>
+    <div class="mb-2">
         <label for="street-select">Street:</label>
         <select id="street-select" multiple>
-            <!-- <option value="">--Loading--</option> -->
         </select>
         <div class="form-text">
             ⚠️ Warning: Streets may be listed multiple times with different naming variations.
@@ -111,7 +109,7 @@
         </div>
     </div>
     <div class="mb-2">
-        House numbers (inclusive) <input type="text" id="house-start" value="300" size="4"> to <input type="text" id="house-end" value="399" size="4">
+        House numbers (inclusive) <input type="text" id="house-start" value="0" size="4"> to <input type="text" id="house-end" value="1000" size="4">
     </div>
     <div class="row bg-light pt-3 rounded-bottom-3">
     <div class="mb-2">
@@ -188,7 +186,6 @@
         document.getElementById("agency-select").addEventListener("change", _ => {updateStreets()});
         document.getElementById("street-select").addEventListener("change", populateIntersections);
         document.getElementById("query-button").addEventListener("click", queryNYCOpenData);
-
     }
 
     function saveURLState() {
@@ -283,7 +280,7 @@
             })
         } else {
             // re-set the same options we had previously
-            selectize.refreshOptions()
+            selectize.refreshOptions(false) // triggerDropdown=false
             selectize.setValue(availableStreets)
         }
 
