@@ -176,8 +176,8 @@
         const urlSearchParams = new URLSearchParams(window.location.search)
         document.getElementById("borough-select").value = defaultString(nullString(urlSearchParams.get("borough")), "Manhattan")
         document.getElementById("agency-select").value = defaultString(nullString(urlSearchParams.get("agency")), "T")
-        document.getElementById("house-start").value = defaultString(nullString(urlSearchParams.get("house-start")), "300")
-        document.getElementById("house-end").value = defaultString(nullString(urlSearchParams.get("house-end")), "399")
+        document.getElementById("house-start").value = defaultString(nullString(urlSearchParams.get("house-start")), "0")
+        document.getElementById("house-end").value = defaultString(nullString(urlSearchParams.get("house-end")), "1000")
 
         loadStreets(urlSearchParams.getAll("street"), urlSearchParams.getAll("intersection"));
 
