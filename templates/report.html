@@ -440,12 +440,12 @@ function queryNYCOpenData() {
 
         if (parkingData.length > 0 ) {
             if (groupByDate.length > 1) {
-                summaryParagraphs.push(`<mark>${dtFormatLong.format(topDate)}</mark> had the most parking violations issuesd (<mark>${topDateCount}</mark>). `)
+                summaryParagraphs.push(`<mark>${dtFormatLong.format(topDate)}</mark> had the most parking violations issued (<mark>${topDateCount}</mark>). `)
             }
-            summaryParagraphs.push(`The most common violation was <mark>${ViolationCodes[topViolation]}</mark> (issued <mark>${topViolationCount}</mark> times). `)
+            summaryParagraphs.push(`The most common parking violation was <mark>${ViolationCodes[topViolation]}</mark> (issued <mark>${topViolationCount}</mark> times). `)
         }
         if (nonParkingData.length > 0) {
-            summaryParagraphs.push(`There was <mark>${nonParkingData.length}</mark> non-parking violations issued.`)
+            summaryParagraphs.push(`There ${nonParkingData.length == 1 ? "was":"were"} <mark>${nonParkingData.length}</mark> non-parking violations issued.`)
         }
         // TODO: use the filter not the results
         if (groupByAgency.length > 1) {
