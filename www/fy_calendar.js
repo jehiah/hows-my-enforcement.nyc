@@ -4,7 +4,7 @@ function FYCalendar(data, {
     x = ([x]) => x, // given d in data, returns the (temporal) x-value
     y = ([, y]) => y, // given d in data, returns the (quantitative) y-value
     title, // given d in data, returns the title text
-    width = 928, // width of the chart, in pixels
+    width = undefined, // width of the chart, in pixels
     Xmin=undefined,
     Xmax=undefined,
     cellSize = 17, // width and height of an individual day, in pixels
@@ -28,6 +28,9 @@ function FYCalendar(data, {
     // const timeMonth = d3.utcMonth
     const weekDays = weekday === "weekday" ? 5 : 7;
     const height = 25 + ((cellSize + cellPadding) * weekDays);
+    if (width == undefined ) {
+      width = 15 + (d3.utcMonth.count(d3.utcMonth(Xmin), Xmax) * monthPadding) + ((timeWeek.count(timeWeek(Xmin), Xmax) + 1) * ( cellSize + cellPadding ))
+    }
     
     // Construct formats.
     formatMonth = d3.utcFormat(formatMonth);

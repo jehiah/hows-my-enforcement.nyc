@@ -456,7 +456,17 @@ function queryNYCOpenData() {
 
         summary.innerHTML = summaryParagraphs.join("")
 
-        
+
+        let container = document.createElement("div")
+        container.className = "calendar-chart"
+        el.appendChild(container)
+
+        let cellSize = 14
+        const width = container.offsetWidth - parseFloat(getComputedStyle(container).paddingLeft, 10)- parseFloat(getComputedStyle(container).paddingRight, 10)
+        if (width > 900) {
+            cellSize = 16
+        }
+
         // create calendar chart
         const calendarChart = FYCalendar(violationsByDay, {
             x: d => d.date,
@@ -467,9 +477,9 @@ function queryNYCOpenData() {
             color: d3.scaleSequential([1, maxVal], d3.interpolateHcl("#fafa6e", "#2A4858")),
             emptyColor: "#f3f3f3",
             weekday:"sunday",
-            width:900,
+            // width:900,
             // yFormat: "%d",
-            cellSize: 17,
+            cellSize: cellSize,
             cellPadding: 2,
             monthPadding: 17 + 2,
             formatMonth: "%b %Y",
@@ -479,8 +489,6 @@ function queryNYCOpenData() {
         })
 
 
-        let container = document.createElement("div")
-        container.className = "calendar-chart"
         // container.appendChild(Legend(
         //     calendarChart.scales.color, {
         //         title: "FY 2022-2023 Violations/day",
@@ -488,14 +496,12 @@ function queryNYCOpenData() {
         //     }
         // ));
         el.removeChild(spinner)
-        el.appendChild(container)
 
 
         container = document.createElement("div")
         container.className = "calendar-chart mb-4"
         container.appendChild(calendarChart)
         el.appendChild(container)
-
         if (parkingData.length > 0) {
             // create calendar chart
             const punchcard = Punchcard(parkingData, {
@@ -528,7 +534,7 @@ function queryNYCOpenData() {
             windowWidth: 800,
             widowHeight: 400,
             onclone: d => {
-                console.log(d);
+                // console.log(d);
                 d.getElementsByTagName("body")[0].className="render"
             },
             ignoreElements: e => e.classList.contains("hide-render")
