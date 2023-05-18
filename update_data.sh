@@ -1,8 +1,11 @@
 #!/bin/sh
 
-set -e 
 if ! [ -e temp.json ]; then
     bq query --use_legacy_sql=false --format=json --max_rows=200000 < query_intersections.sql > temp.json
+    if [ $? != 0 ]; then
+        echo "error querying bigquery"
+        exit 1
+    fi
 else
     echo "using existing temp.json file"
 fi
@@ -19,6 +22,7 @@ function rewrite() {
     echo "${county}: extracted $(cat ${target_dir}/${target_file} | wc -l ) records"
     return $?
 }
+set -e 
 
 echo "Got $(jq -c '. | length' temp.json) records"
 
