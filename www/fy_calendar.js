@@ -58,6 +58,8 @@ function FYCalendar(data, {
     //       : `M${(w + 1) * cellSize},0V${d * cellSize}H${w * cellSize}`}V${weekDays * cellSize}`;
     // }
   
+    const container = document.createElement("div")
+
     const svg = d3.create("svg")
         .attr("width", width)
         // .attr("height", height * years.length)
@@ -67,6 +69,12 @@ function FYCalendar(data, {
         .attr("style", "max-width: 100%; height: auto; height: intrinsic;")
         .attr("font-family", "sans-serif")
         .attr("font-size", 10);
+    container.appendChild(svg.node())
+    const tooltip = d3.select( container.appendChild(document.createElement("div")))
+  .attr("class", "tooltip")
+  .style("position", "absolute")
+  .style("pointer-events", "none")
+  .style("opacity", 0);
   
     // const year = svg.selectAll("g")
     //   .data([[1, I]])
@@ -102,8 +110,41 @@ function FYCalendar(data, {
         .attr("height", cellSize)
         .attr("x", d => (d3.utcMonth.count(d3.utcMonth(Xmin), x(d)) * monthPadding) + (timeWeek.count(timeWeek(Xmin), x(d)) * (cellSize + cellPadding)))
         .attr("y", d => countDay(x(d).getUTCDay()) * (cellSize + cellPadding))
-        .attr("fill", d => y(d) == 0 ? emptyColor : color(y(d)));
+        .attr("fill", d => y(d) == 0 ? emptyColor : color(y(d)))
+        .on("mouseover", (event, d) => {
+          event.target.classList.add("highlighted")
 
+          if ( y(d) == 0) { 
+            tooltip.transition()
+            .duration(50)
+            .style("opacity", 0);
+            tooltip.html('')
+            return
+          }
+
+          
+          // d3.select(this).classed("highlighted", true);
+          // console.log(d, y(d));
+          // Show tooltip and update its content based on the hovered item
+          tooltip.transition()
+            .duration(100)
+            .style("opacity", 0.9);
+          tooltip.html(title(d))
+            .style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY + 10) + "px");
+        })
+        .on("mousemove", _ =>  {
+          // Update tooltip position on mousemove
+          tooltip.style("left", (event.pageX + 10) + "px")
+            .style("top", (event.pageY + 10) + "px");
+        })
+        .on("mouseout", event =>  {
+          event.target.classList.remove("highlighted")
+          // Hide tooltip on mouseout
+          tooltip.transition()
+            .duration(100)
+            .style("opacity", 0);
+        })
         if (title) cell.append("title")
         .text(title);
 
@@ -156,6 +197,6 @@ function FYCalendar(data, {
       // .attr("y", -5)
       .text(d => formatMonth(d));
   
-    return Object.assign(svg.node(), {scales: {color}});
+    return Object.assign(container, {scales: {color}});
 }
 export {FYCalendar as default}

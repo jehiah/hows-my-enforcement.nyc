@@ -67,6 +67,15 @@
     .render mark {
         white-space: nowrap;
     }
+    .tooltip {
+        background-color: #fff;
+        border-color: #777;
+        border-radius: 3px;
+        font-size: .8rem;
+    }
+    rect.cell.highlighted {
+        stroke: #000;
+    }
 </style>
 </head>
 <body>
@@ -473,6 +482,7 @@ function queryNYCOpenData() {
         }
 
         // create calendar chart
+        const titleDateFormat = d3.utcFormat("%A %b %d %Y");
         const calendarChart = FYCalendar(violationsByDay, {
             x: d => d.date,
             y: d => d.count,
@@ -490,7 +500,7 @@ function queryNYCOpenData() {
             formatMonth: "%b %Y",
             // title: d => d.count
             // todo: https://medium.com/@kj_schmidt/show-data-on-mouse-over-with-d3-js-3bf598ff8fc2
-            title: d => d.count > 0 ? `${dtFormat.format(d.date)}: ${d.count}` : ""
+            title: d => d.count > 0 ? `${titleDateFormat(d.date)}: ${d.count} violations` : ""
         })
 
 
