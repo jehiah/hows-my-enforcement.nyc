@@ -117,6 +117,11 @@
     const FYLookup = {
         // TODO: automatically set max data separately
         // P, T, S have data through this end date
+       "FY2023-2024": {
+        "dataset":"pvqr-7yc4",
+        "start": parseDate("2022-10-01"), // TEMP use the past 12 months
+        "end": parseDate("2023-09-26"), // NYPD only through 9/12
+       },
       "FY2022-2023": {
         "dataset":"pvqr-7yc4",
         "start": parseDate("2022-07-01"),
@@ -124,7 +129,7 @@
        },
       "FY2021-2022": {"dataset":"7mxj-7a6y", "start": parseDate("2021-07-01"), "end": parseDate("2022-06-30")}
     }
-    const FY = FYLookup["FY2022-2023"]
+    const FY = FYLookup["FY2023-2024"]
 
     const ViolationCodes = {
         "1":"FAILURE TO DISPLAY BUS PERMIT",
