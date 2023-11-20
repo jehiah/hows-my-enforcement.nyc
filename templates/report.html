@@ -115,19 +115,23 @@
 
     const parseDate = d3.utcParse("%Y-%m-%d")
     const FYLookup = {
-        // TODO: automatically set max data separately
-        // P, T, S have data through this end date
-       "FY2023-2024": {
-        "dataset":"pvqr-7yc4",
+      // TODO: automatically set max data separately
+      // P, T, S have data through this end date
+      "FY2023-2024": {
+        "dataset":"869v-vr48", // FY2023
         "start": parseDate("2022-10-01"), // TEMP use the past 12 months
         "end": parseDate("2023-09-26"), // NYPD only through 9/12
-       },
+      },
       "FY2022-2023": {
         "dataset":"pvqr-7yc4",
         "start": parseDate("2022-07-01"),
         "end": parseDate("2023-07-26"), // NYPD only through 7/15
-       },
-      "FY2021-2022": {"dataset":"7mxj-7a6y", "start": parseDate("2021-07-01"), "end": parseDate("2022-06-30")}
+      },
+      "FY2021-2022": {
+        "dataset":"7mxj-7a6y",
+        "start": parseDate("2021-07-01"),
+        "end": parseDate("2022-06-30"),
+      }
     }
     const FY = FYLookup["FY2023-2024"]
 
@@ -279,7 +283,7 @@ function queryNYCOpenData() {
     el.appendChild(spinner)
 
     // TODO: summons_number
-    const url = "https://data.cityofnewyork.us/resource/pvqr-7yc4.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=75000";
+    const url = "https://data.cityofnewyork.us/resource/"+FY.dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=75000";
     let filters = [];
     const dateFormat = d3.utcFormat("%Y-%m-%d")
     let displayFilters = [
