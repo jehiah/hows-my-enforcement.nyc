@@ -17,6 +17,8 @@
         
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/d3@7.8.3/dist/d3.min.js" integrity="sha256-z9jvEmgHGEfWO4rPfEXUGKFd6UkxkavfJ0zf3qT31O4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js" integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/utc.js" integrity="sha256-qDfIIxqpRhYWa543p6AHZ323xT3B8O6iLZFUAWtEQJw=" crossorigin="anonymous"></script>    
     {{ if .SavePreview}}
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha256-6H5VB5QyLldKH9oMFUmjxw2uWpPZETQXpCkBaDjquMs=" crossorigin="anonymous"></script>
     {{ end }}
@@ -86,7 +88,7 @@
         <div class="col-12 col-lg-10 col-xl-8">
         <h1><a href="/">How is NYC Parking Enforcement?</a></h1>
         <p class="hide-render">Is NYPD Traffic's parking enforcement consistent and rigerous on your block? <a href="/">Check</a>!</p>
-        <p class="fw-light hide-render">Quantity doesn't equal quality. NYPD Traffic should provide consistent rigorous enforcement of parking regulations.</p>
+        <p class="fw-light hide-render">Enforcement of parking regulations should be consistent and rigorous.</p>
         </div>
     </div>
 
@@ -100,7 +102,7 @@
 <div class="row">
     <footer>
         <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
-        <p>Data from <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2023/pvqr-7yc4">NYC Open Data</a></p>
+        <p>Data from <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2024/pvqr-7yc4">NYC Open Data</a></p>
     </footer>
 </div>
 
@@ -108,6 +110,8 @@
 
 
 <script type="module">
+    // var utc = require('dayjs/plugin/utc')
+    // dayjs.extend(utc)
     import FYCalendar from "./static/fy_calendar.js"
     import Punchcard from "./static/punchcard.js"
 
@@ -117,23 +121,28 @@
     const FYLookup = {
       // TODO: automatically set max data separately
       // P, T, S have data through this end date
-      "FY2023-2024": {
-        "dataset":"869v-vr48", // FY2023
-        "start": parseDate("2022-10-01"), // TEMP use the past 12 months
+      "FY2024": {
+        "dataset":"pvqr-7yc4", 
+        "start": parseDate("2023-07-01"), // TEMP use the past 12 months
         "end": parseDate("2023-09-26"), // NYPD only through 9/12
       },
-      "FY2022-2023": {
+      "FY2023": {
+        "dataset":"869v-vr48", 
+        "start": parseDate("2022-07-01"),
+        "end": parseDate("2023-06-30"), 
+      },
+      "FY2022": {
         "dataset":"pvqr-7yc4",
         "start": parseDate("2022-07-01"),
-        "end": parseDate("2023-07-26"), // NYPD only through 7/15
+        "end": parseDate("2023-07-01"),
       },
-      "FY2021-2022": {
+      "FY2021": {
         "dataset":"7mxj-7a6y",
         "start": parseDate("2021-07-01"),
         "end": parseDate("2022-06-30"),
       }
     }
-    const FY = FYLookup["FY2023-2024"]
+    const FY = FYLookup["FY2024"]
 
     const ViolationCodes = {
         "1":"FAILURE TO DISPLAY BUS PERMIT",
@@ -255,7 +264,18 @@
 
 const dtFormat = new Intl.DateTimeFormat("en-US");
 
-
+function getData(query) {
+    return Promise.all([
+    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=75000"+query),
+    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=75000"+query)
+    ]).then(results => Promise.all(results.map(r => r.text())))
+    .then(results => {
+        const d1 = d3.csvParse(results[0])
+        const d2 = d3.csvParse(results[1])
+        d1.push(...d2)
+        return d1
+    })
+}
     
 // function to query NYC Open Data and render D3 calendar chart
 function queryNYCOpenData() {
@@ -283,11 +303,12 @@ function queryNYCOpenData() {
     el.appendChild(spinner)
 
     // TODO: summons_number
-    const url = "https://data.cityofnewyork.us/resource/"+FY.dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=75000";
     let filters = [];
+    dayjs.extend(dayjs_plugin_utc)
+    let startDate = dayjs(FY.end).utcOffset(0).date(1).subtract(11, 'month').toDate()
     const dateFormat = d3.utcFormat("%Y-%m-%d")
     let displayFilters = [
-      `issue_date between ${dateFormat(FY.start)} and ${dateFormat(FY.end)}`,
+      `issue_date between ${dateFormat(startDate)} and ${dateFormat(FY.end)}`,
     ];
 
     if (street == null || street.length == 0) {
@@ -344,7 +365,6 @@ function queryNYCOpenData() {
         displayFilters.push(`issuing_agency in ('T','P','S') // Traffic, NYPD, Sanitation` )
     }
     const queryString = `&$where=${filters.join(" AND ")}`
-    const fullUrl = `${url}${queryString}`;
 
     function isHouseMatch(h, houseStart, houseEnd) {
         if (isNaN(houseStart) || isNaN(houseEnd)) { return true;}
@@ -364,7 +384,7 @@ function queryNYCOpenData() {
         return options.indexOf(s) !== -1
     }  
 
-    d3.csv(fullUrl).then(function(data) {
+    getData(queryString).then(function(data) {
         // parse date strings to Date objects
         const parseDate = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L");
         const parseTime = d3.utcParse("%I%M%p");
@@ -391,10 +411,8 @@ function queryNYCOpenData() {
             }
         })
 
-        data.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
-
         data = data.filter( d=> { 
-            if (d.issue_date < FY.start || d.issue_date > FY.end) { return false; }
+            if (d.issue_date < startDate || d.issue_date > FY.end) { return false; }
             if (houseStart == NaN && houseEnd == NaN && validIntersections.length == 0) { return true;}
             // records must either match on an intersection (if set) XOR a house number
             if (d.intersecting_street !== "") { 
@@ -402,6 +420,8 @@ function queryNYCOpenData() {
             }
             return isHouseMatch(d.house_number , houseStart, houseEnd)
         });
+
+        data.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
         const parkingData = data.filter(d => !nonParkingViolations.has(d.violation_code))
         const nonParkingData = data.filter(d => nonParkingViolations.has(d.violation_code))
         // console.log("matching data", data.length, data.slice(0,10))
@@ -418,7 +438,7 @@ function queryNYCOpenData() {
         const violationsByDay = groupByDate.map(([k,v]) => {return {date:k, count:v}})
         const groupOfDate = violationsByDay.map(d => d.date.toDateString())
         // extend to include zero counts for empty days
-        violationsByDay.push(... d3.utcDay.range(FY.start, FY.end).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, count:0}}))
+        violationsByDay.push(... d3.utcDay.range(startDate, FY.end).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, count:0}}))
 
         const groupByAgency = d3.rollups(parkingData, v => v.length, d => d.issuing_agency);
         const groupByViolation = d3.rollups(parkingData, v => v.length, d => d.violation_code);
@@ -444,7 +464,7 @@ function queryNYCOpenData() {
             `<mark>${parkingData.length}</mark> parking violations were issued`,
             issuingAgency != "all" ? ` by <mark>${agencyLookup[issuingAgency]}</mark> `: "",
             ` on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
-          <mark>${d3.utcFormat("%b %d %Y")(FY.start)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(FY.end)}</mark> 
+          <mark>${d3.utcFormat("%b %d %Y")(startDate)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(FY.end)}</mark> 
           (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days). `
         ]
 
@@ -495,7 +515,7 @@ function queryNYCOpenData() {
         const calendarChart = FYCalendar(violationsByDay, {
             x: d => d.date,
             y: d => d.count,
-            Xmin: FY.start,
+            Xmin: startDate,
             Xmax: FY.end,
             // color: d3.scaleSequential([0, maxVal], d3.interpolateSpectral),
             color: d3.scaleSequential([1, maxVal], d3.interpolateHcl("#fafa6e", "#2A4858")),
