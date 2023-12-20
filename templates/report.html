@@ -62,6 +62,7 @@
     .table>thead>tr>th:first-child, .table>tbody>tr>td:first-child {
         padding-left: .5rem;
     }
+
     .agency { display: none;}
     @media (min-width: 768px) { 
         .agency { display: table-cell; }
@@ -124,7 +125,7 @@
       "FY2024": {
         "dataset":"pvqr-7yc4", 
         "start": parseDate("2023-07-01"), // TEMP use the past 12 months
-        "end": parseDate("2023-09-26"), // NYPD only through 9/12
+        "end": parseDate("2023-11-26"), // NYPD only through 9/14
       },
       "FY2023": {
         "dataset":"869v-vr48", 
@@ -266,8 +267,8 @@ const dtFormat = new Intl.DateTimeFormat("en-US");
 
 function getData(query) {
     return Promise.all([
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=75000"+query),
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time&$limit=75000"+query)
+    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
+    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
     ]).then(results => Promise.all(results.map(r => r.text())))
     .then(results => {
         const d1 = d3.csvParse(results[0])
@@ -411,15 +412,26 @@ function queryNYCOpenData() {
             }
         })
 
+        let seenSummons = {}
         data = data.filter( d=> { 
             if (d.issue_date < startDate || d.issue_date > FY.end) { return false; }
             if (houseStart == NaN && houseEnd == NaN && validIntersections.length == 0) { return true;}
             // records must either match on an intersection (if set) XOR a house number
+            let match = false
             if (d.intersecting_street !== "") { 
-                return isIntersectingMatch(d.intersecting_street, validIntersections)
+                match = isIntersectingMatch(d.intersecting_street, validIntersections)
+            } else {
+                match =  isHouseMatch(d.house_number , houseStart, houseEnd)
             }
-            return isHouseMatch(d.house_number , houseStart, houseEnd)
+            if (!match) { return match}
+
+            // dedupe across two fiscal year datasets - they have overlap
+            const key = d.summons_number + ' ' +  d.violation_code
+            if (seenSummons[key])  return false
+            seenSummons[key] = true
+            return match
         });
+        seenSummons = null
 
         data.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
         const parkingData = data.filter(d => !nonParkingViolations.has(d.violation_code))
@@ -621,6 +633,7 @@ function queryNYCOpenData() {
         const tr = thead.appendChild(document.createElement("tr"))
         tr.className = "bg-dark text-light"
         tr.appendChild(document.createElement("th")).innerText = "Date"
+        tr.appendChild(document.createElement("th")).innerText = "Summons"
         tr.appendChild(document.createElement("th")).innerText = "License"
         tr.appendChild(document.createElement("th")).innerText = "Location"
         let cell = tr.appendChild(document.createElement("th"))
@@ -634,6 +647,9 @@ function queryNYCOpenData() {
             tr.className = nonParkingViolations.has(d.violation_code) ? "non-parking-violation" : "parking-violation"
             tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time // TODO format
             let cell = tr.appendChild(document.createElement("td"))
+            cell.className = "summons font-monospace"
+            cell.innerText = d.summons_number
+            cell = tr.appendChild(document.createElement("td"))
             cell.innerText = d.registration_state + ":" + d.plate_id 
             cell.className = "font-monospace"
             tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street == "" ? "":  " @ " + d.intersecting_street)
