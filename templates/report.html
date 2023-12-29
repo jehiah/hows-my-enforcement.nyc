@@ -396,7 +396,7 @@ function queryNYCOpenData() {
             hour12: true,
             timeZone: "UTC",
         });
-        if (data.length == 75000) {
+        if (data.length == 100000) {
             alert("⚠️ The Open Data Query returned the maximum results. Data is truncated. Narrow the street selection for complete results.")
         }
         data.forEach(function(d) {
