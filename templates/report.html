@@ -120,27 +120,29 @@
 
     const parseDate = d3.utcParse("%Y-%m-%d")
     const FYLookup = {
-      // TODO: automatically set max data separately
-      // P, T, S have data through this end date
       "FY2024": {
         "dataset":"pvqr-7yc4", 
-        "start": parseDate("2023-07-01"), // TEMP use the past 12 months
-        "end": parseDate("2023-11-26"), // NYPD only through 9/14
+        "start": parseDate("2023-07-01"),
+        "end": {
+            "P":parseDate("2024-01-16"),
+            "T":parseDate("2024-01-28"),
+            "S":parseDate("2024-01-30")
+        }
       },
       "FY2023": {
         "dataset":"869v-vr48", 
         "start": parseDate("2022-07-01"),
-        "end": parseDate("2023-06-30"), 
+        "end": parseDate("2023-06-30")
       },
       "FY2022": {
         "dataset":"pvqr-7yc4",
         "start": parseDate("2022-07-01"),
-        "end": parseDate("2023-07-01"),
+        "end": parseDate("2023-07-01")
       },
       "FY2021": {
         "dataset":"7mxj-7a6y",
         "start": parseDate("2021-07-01"),
-        "end": parseDate("2022-06-30"),
+        "end": parseDate("2022-06-30")
       }
     }
     const FY = FYLookup["FY2024"]
@@ -306,10 +308,11 @@ function queryNYCOpenData() {
     // TODO: summons_number
     let filters = [];
     dayjs.extend(dayjs_plugin_utc)
-    let startDate = dayjs(FY.end).utcOffset(0).date(1).subtract(11, 'month').toDate()
+    let end = issuingAgency == "any" ? FY.end.P :FY.end[issuingAgency]
+    let startDate = dayjs(end).utcOffset(0).date(1).subtract(11, 'month').toDate()
     const dateFormat = d3.utcFormat("%Y-%m-%d")
     let displayFilters = [
-      `issue_date between ${dateFormat(startDate)} and ${dateFormat(FY.end)}`,
+      `issue_date between ${dateFormat(startDate)} and ${dateFormat(end)}`,
     ];
 
     if (street == null || street.length == 0) {
@@ -414,7 +417,7 @@ function queryNYCOpenData() {
 
         let seenSummons = {}
         data = data.filter( d=> { 
-            if (d.issue_date < startDate || d.issue_date > FY.end) { return false; }
+            if (d.issue_date < startDate || d.issue_date > end) { return false; }
             if (houseStart == NaN && houseEnd == NaN && validIntersections.length == 0) { return true;}
             // records must either match on an intersection (if set) XOR a house number
             let match = false
@@ -450,7 +453,7 @@ function queryNYCOpenData() {
         const violationsByDay = groupByDate.map(([k,v]) => {return {date:k, count:v}})
         const groupOfDate = violationsByDay.map(d => d.date.toDateString())
         // extend to include zero counts for empty days
-        violationsByDay.push(... d3.utcDay.range(startDate, FY.end).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, count:0}}))
+        violationsByDay.push(... d3.utcDay.range(startDate, end).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, count:0}}))
 
         const groupByAgency = d3.rollups(parkingData, v => v.length, d => d.issuing_agency);
         const groupByViolation = d3.rollups(parkingData, v => v.length, d => d.violation_code);
@@ -476,7 +479,7 @@ function queryNYCOpenData() {
             `<mark>${parkingData.length}</mark> parking violations were issued`,
             issuingAgency != "all" ? ` by <mark>${agencyLookup[issuingAgency]}</mark> `: "",
             ` on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
-          <mark>${d3.utcFormat("%b %d %Y")(startDate)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(FY.end)}</mark> 
+          <mark>${d3.utcFormat("%b %d %Y")(startDate)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(end)}</mark> 
           (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days). `
         ]
 
@@ -528,7 +531,7 @@ function queryNYCOpenData() {
             x: d => d.date,
             y: d => d.count,
             Xmin: startDate,
-            Xmax: FY.end,
+            Xmax: end,
             // color: d3.scaleSequential([0, maxVal], d3.interpolateSpectral),
             color: d3.scaleSequential([1, maxVal], d3.interpolateHcl("#fafa6e", "#2A4858")),
             emptyColor: "#f3f3f3",

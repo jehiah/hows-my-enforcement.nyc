@@ -1,0 +1,8 @@
+[
+    {
+      "origin": ["https://hows-my-enforcement.nyc", "http://127.0.0.1:8083"],
+      "method": ["GET"],
+      "responseHeader": ["Content-Type"],
+      "maxAgeSeconds": 3600
+    }
+]

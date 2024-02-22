@@ -212,8 +212,10 @@
     function loadStreets(defaultStreets, defaultIntersections) {
         // console.log("loadStreets");
         const borough = document.getElementById("borough-select").value;
+        const DatasetID = "o2m9tI"
+        const FY="fy_2024"
 
-        const filename = `/static/fy_2023_${boroughLookup[borough]}_intersecting_streets.tsv`
+        const filename = `https://storage.googleapis.com/hows-my-enforcement-nyc/data/${FY}_${DatasetID}_${boroughLookup[borough]}_intersecting_streets.tsv`
         
         console.log("opening", filename);
 
@@ -223,7 +225,7 @@
             streetData =  text.split('\n').map(row => {
                 const d = row.split('\t')
                 if (d.length != 4) {return}
-                if (d[0] == "street"){return}
+                if (d[0] == "Street"){return}
                 return {
                     street_name : d[0],
                     intersecting_streets : d[1].split('|'),

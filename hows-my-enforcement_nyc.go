@@ -20,6 +20,7 @@ import (
 	"firebase.google.com/go/v4/auth"
 	"github.com/gorilla/handlers"
 	"github.com/jehiah/hows-my-enforcement.nyc/internal/account"
+	"github.com/jehiah/hows-my-enforcement.nyc/internal/dthash"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -140,7 +141,7 @@ func (a *App) IndexPost(w http.ResponseWriter, r *http.Request) {
 		a.WebError(w, 400, "invalid body")
 		return
 	}
-	report.ID = ReportID(DateHash(time.Now()).String() + Randomness())
+	report.ID = ReportID(dthash.DateHash(time.Now()).String()[:3] + Randomness())
 
 	// if !account.IsValidProfileID(profile.ID) {
 	// 	log.WithField("uid", uid).Infof("profile ID %q is invalid", profile.ID)
