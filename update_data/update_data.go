@@ -66,6 +66,11 @@ CASE
   WHEN violation_county in ("BK", "K", "Kings") THEN "bk"
   WHEN violation_county in ("Q", "QN", "Qns") THEN "qn"
   WHEN violation_county in ("R", "Rich", "ST") THEN "si"
+  WHEN violation_county is null and violation_precinct between 1 and 34 THEN "ny"
+  WHEN violation_county is null and violation_precinct between 40 and 52 THEN "bx"
+  WHEN violation_county is null and violation_precinct between 60 and 94 THEN "bk"
+  WHEN violation_county is null and violation_precinct between 100 and 115 THEN "qn"
+  WHEN violation_county is null and violation_precinct between 120 and 123 THEN "si"
   ELSE "Unknown"
 END as County,
   street_name as Street,
@@ -78,10 +83,11 @@ issuing_agency in ('T','P','S')
 and issue_date is not null
 and issue_date between DATE_ADD(CURRENT_DATE, INTERVAL -13 MONTH) and CURRENT_DATE
 and street_name is not null
-and violation_county is not null
+-- and violation_county is not null
 and violation_county in ("MN", "NY", "BX", "Bronx", "BK", "K", "Kings", "Q", "QN", "Qns", "R", "Rich", "ST")
 group by 1, 2
 -- having number_violations > 1
+having County <> "Unknown"
 order by 1, lower(street_name)
 `
 

@@ -269,8 +269,8 @@ const dtFormat = new Intl.DateTimeFormat("en-US");
 
 function getData(query) {
     return Promise.all([
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
+    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number,violation_county,violation_precinct&$limit=100000"+query),
+    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number,violation_county,violation_precinct&$limit=100000"+query)
     ]).then(results => Promise.all(results.map(r => r.text())))
     .then(results => {
         const d1 = d3.csvParse(results[0])
@@ -340,23 +340,23 @@ function queryNYCOpenData() {
 
     switch (borough) {
         case "Brooklyn":
-            filters.push(`violation_county in ('BK', 'K', 'Kings')`)
+            filters.push(`(violation_county in ('BK', 'K', 'Kings) or violation_county is null)`)
             displayFilters.push(`violation_county in ('BK', 'K', 'Kings') // Brooklyn`)
             break;
         case "Manhattan":
-            filters.push(`violation_county in ('NY', 'MN')`)
+            filters.push(`(violation_county in ('NY', 'MN') or violation_county is null)`)
             displayFilters.push(`violation_county in ('NY', 'MN') // Manhattan`)
             break;
         case "Bronx":
-            filters.push(`violation_county in ('BX', 'Bronx')`)
+            filters.push(`(violation_county in ('BX', 'Bronx') or violation_county is null)`)
             displayFilters.push(`violation_county in ('BX', 'Bronx') // Bronx`)
             break;
         case "Queens":
-            filters.push(`violation_county in ('Q', 'QN', 'Qns')`)
+            filters.push(`(violation_county in ('Q', 'QN', 'Qns')  or violation_county is null)`)
             displayFilters.push(`violation_county in ('Q', 'QN', 'Qns') // Queens`)
             break;
         case "Staten Island":
-            filters.push(`violation_county in ('R', 'Rich', 'ST')`)
+            filters.push(`(violation_county in ('R', 'Rich', 'ST')  or violation_county is null)`)
             displayFilters.push(`violation_county in ('R', 'Rich', 'ST') // Staten Island`)
             break;
     }
@@ -386,7 +386,16 @@ function queryNYCOpenData() {
         .replace(/.+ (.+\/of .+$)/, '$1') // strip the prefix before "w/of street"
         // console.log(i, s, options.indexOf(s))
         return options.indexOf(s) !== -1
-    }  
+    }
+    function precinctCounty(p) {
+        const precinct = +p
+        if (precinct >=1 && precinct <= 34) { return "Manhattan"}
+        if (precinct >=60 && precinct <= 94) { return "Brooklyn"}
+        if (precinct >=40 && precinct <= 52) { return "Bronx"}
+        if (precinct >=100 && precinct <= 115) { return "Queens"}
+        if (precinct >=120 && precinct <= 123) { return "Staten Island"}
+        return ""
+    }
 
     getData(queryString).then(function(data) {
         // parse date strings to Date objects
@@ -417,6 +426,7 @@ function queryNYCOpenData() {
 
         let seenSummons = {}
         data = data.filter( d=> { 
+            if (d.violation_county == "" && precinctCounty(d.violation_precinct) != borough) {return false}
             if (d.issue_date < startDate || d.issue_date > end) { return false; }
             if (houseStart == NaN && houseEnd == NaN && validIntersections.length == 0) { return true;}
             // records must either match on an intersection (if set) XOR a house number
