@@ -119,7 +119,6 @@ func (a *App) Index(w http.ResponseWriter, r *http.Request) {
 		log.Print(err)
 		a.WebInternalError500(w, "")
 	}
-	return
 }
 
 func (a *App) IndexPost(w http.ResponseWriter, r *http.Request) {
@@ -195,6 +194,22 @@ func (a *App) Report(w http.ResponseWriter, r *http.Request, id ReportID) {
 	}
 }
 
+func (a *App) Precinct(w http.ResponseWriter, r *http.Request) {
+
+	type Page struct {
+		Report      Report
+		SavePreview bool
+	}
+	body := Page{}
+
+	t := newTemplate(a.templateFS, "precinct.html")
+	err := t.ExecuteTemplate(w, "precinct.html", body)
+	if err != nil {
+		log.Print(err)
+		a.WebInternalError500(w, "")
+	}
+}
+
 func (app *App) User(*http.Request) account.UID {
 	return account.UID("test")
 }
@@ -205,6 +220,9 @@ func (app App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/":
 			app.Index(w, r)
+			return
+		case "/precinct":
+			app.Precinct(w, r)
 			return
 		case "/robots.txt":
 			app.RobotsTXT(w, r)

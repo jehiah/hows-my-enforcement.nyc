@@ -6,23 +6,24 @@
     <link rel="icon" href="/static/favicon_96.png">
     <title>How is NYC Parking Enforcement?</title>
 
-    {{ if .Report.PreviewImage }}
+    <!-- {{ if .Report.PreviewImage }}
     <meta property="og:title" content="How is NYC Parking Enforcement?" />
     <meta property="og:type" content="website" />
     <meta property="og:description" content="{{.Report.Description}}" />
     <meta property="og:url" content="https://hows-my-enforcement.nyc{{.Report.Link}}" />
     <meta property="og:image" content="{{.Report.PublicPreview}}" />
     <meta property="og:image:type" content="image/png" />
-    {{ end }}
+    {{ end }} -->
         
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/d3@7.8.3/dist/d3.min.js" integrity="sha256-z9jvEmgHGEfWO4rPfEXUGKFd6UkxkavfJ0zf3qT31O4=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js" integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/utc.js" integrity="sha256-qDfIIxqpRhYWa543p6AHZ323xT3B8O6iLZFUAWtEQJw=" crossorigin="anonymous"></script>    
-    {{ if .SavePreview}}
+    <!-- {{ if .SavePreview}}
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" integrity="sha256-6H5VB5QyLldKH9oMFUmjxw2uWpPZETQXpCkBaDjquMs=" crossorigin="anonymous"></script>
-    {{ end }}
-    <style>
+    {{ end }} -->
+
+<style>
     body {
         background-color:#ffd900;
 
@@ -93,11 +94,110 @@
         </div>
     </div>
 
+
+    <div class="row">
+       <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
+
+        <form>
+        <div class="mb-2">
+            <label for="precinct-select">Precinct</label>
+            <select id="precinct-select">
+                <option value="1"> 1 Manhattan - 16 Ericsson Place</option>
+                <option value="5"> 5 Manhattan - 19 Elizabeth Street</option>
+                <option value="6"> 6 Manhattan - 233 West 10 Street</option>
+                <option value="7"> 7 Manhattan - 19 Pitt Street</option>
+                <option value="9"> 9 Manhattan - 321 East 5 Street</option>
+                <option value="10"> 10 Manhattan - 230-232 West 20 Street</option>
+                <option value="13"> 13 Manhattan - 230 East 21 Street</option>
+                <option value="14"> 14 Manhattan - 357 West 35 Street</option>
+                <option value="17"> 17 Manhattan - 167 East 51 Street</option>
+                <option value="18"> 18 Manhattan - 306 West 54 Street</option>
+                <option value="19"> 19 Manhattan - 153 East 67 Street</option>
+                <option value="20"> 20 Manhattan - 120 West 82 Street</option>
+                <option value="23"> 23 Manhattan - 164 East 102 Street</option>
+                <option value="24"> 24 Manhattan - 151 West 100 Street</option>
+                <option value="25"> 25 Manhattan - 120 East 119 Street</option>
+                <option value="26"> 26 Manhattan - 520 West 126 Street</option>
+                <option value="28"> 28 Manhattan - 2271-2289 8 Avenue</option>
+                <option value="30"> 30 Manhattan - 451 West 151 Street</option>
+                <option value="32"> 32 Manhattan - 250 West 135 Street</option>
+                <option value="33"> 33 Manhattan - 2207 Amsterdam Avenue</option>
+                <option value="34"> 34 Manhattan - 4295 Broadway</option>
+                <option value="40"> 40 Bronx - 257 Alexander Avenue</option>
+                <option value="41"> 41 Bronx - 1035 Longwood Avenue</option>
+                <option value="42"> 42 Bronx - 830 Washington Avenue</option>
+                <option value="43"> 43 Bronx - 900 Fteley Avenue</option>
+                <option value="44"> 44 Bronx - 2 East 169 Street</option>
+                <option value="45"> 45 Bronx - 2877 Barkley Avenue</option>
+                <option value="46"> 46 Bronx - 2120 Ryer Avenue</option>
+                <option value="47"> 47 Bronx - 4111 Laconia Avenue</option>
+                <option value="48"> 48 Bronx - 450 Cross Bronx Expressway SR South</option>
+                <option value="49"> 49 Bronx - 2121 Eastchester Road</option>
+                <option value="50"> 50 Bronx - 3450 Kingsbridge Avenue</option>
+                <option value="52"> 52 Bronx - 3016 Webster Avenue</option>
+                <option value="60"> 60 Brooklyn - 2951 West 8 Street</option>
+                <option value="61"> 61 Brooklyn - 2575 Coney Island Avenue</option>
+                <option value="62"> 62 Brooklyn - 1925 Bath Avenue</option>
+                <option value="63"> 63 Brooklyn - 1844 Brooklyn Avenue</option>
+                <option value="66"> 66 Brooklyn - 5822 16 Avenue</option>
+                <option value="67"> 67 Brooklyn - 2820 Snyder Avenue</option>
+                <option value="68"> 68 Brooklyn - 333 65 Street</option>
+                <option value="69"> 69 Brooklyn - 9720 Foster Avenue</option>
+                <option value="70"> 70 Brooklyn - 154 Lawrence Avenue</option>
+                <option value="71"> 71 Brooklyn - 421 Empire Boulevard</option>
+                <option value="72"> 72 Brooklyn - 830 4 Avenue</option>
+                <option value="73"> 73 Brooklyn - 1470 East New York Avenue</option>
+                <option value="75"> 75 Brooklyn - 1000 Sutter Avenue</option>
+                <option value="76"> 76 Brooklyn - 191 Union Street</option>
+                <option value="77"> 77 Brooklyn - 127 null</option>
+                <option value="78"> 78 Brooklyn - 65 6 Avenue</option>
+                <option value="79"> 79 Brooklyn - 263-275 Tompkins Avenue</option>
+                <option value="81"> 81 Brooklyn - 30 Ralph Avenue</option>
+                <option value="83"> 83 Brooklyn - 480 Knickerbocker Avenue</option>
+                <option value="84"> 84 Brooklyn - 301 Gold Street</option>
+                <option value="88"> 88 Brooklyn - 298 Classon Avenue</option>
+                <option value="90"> 90 Brooklyn - 211 Union Avenue</option>
+                <option value="94"> 94 Brooklyn - 100 Meserole Avenue</option>
+                <option value="100"> 100 Queens - 92-24 Rockaway Beach Boulevard</option>
+                <option value="101"> 101 Queens - 16-12 Mott Avenue</option>
+                <option value="102"> 102 Queens - 87-34 118 Street</option>
+                <option value="103"> 103 Queens - 168-02 91 Avenue</option>
+                <option value="104"> 104 Queens - 64-02 Catalpa Avenue</option>
+                <option value="105"> 105 Queens - 92-08-92-18 222 Street</option>
+                <option value="106"> 106 Queens - 103-53 101 Street</option>
+                <option value="107"> 107 Queens - 71-01 Parsons Boulevard</option>
+                <option value="108"> 108 Queens - 5-47 50 Avenue</option>
+                <option value="109"> 109 Queens - 37-05 Union Street</option>
+                <option value="110"> 110 Queens - 94-41 43 Avenue</option>
+                <option value="111"> 111 Queens - 45-06 215 Street</option>
+                <option value="112"> 112 Queens - 68-40 Austin Street</option>
+                <option value="113"> 113 Queens - 167-02 Baisley Boulevard</option>
+                <option value="114"> 114 Queens - 34-16 Astoria Boulevard South</option>
+                <option value="115"> 115 Queens - 92-15 Northern Boulevard</option>
+                <option value="120"> 120 Staten Island - 78 Richmond Terrace</option>
+                <option value="121"> 121 Staten Island - 970 Richmond Avenue</option>
+                <option value="122"> 122 Staten Island - 2320 Hylan Boulevard</option>
+                <option value="123"> 123 Staten Island - 116 Main Street</option>
+            </select>
+        </div>
+        <!-- <div class="mb-2">
+            <label for="date-select">Date</label>
+            <input type="date" id="date-select" min="2023-01-01" max="2024-02-23" value="2024-01-01">
+        </div> -->
+        <div class="row bg-light pt-3 rounded-bottom-3">
+            <div class="mb-2">
+                <button id="query-button" type="submit" class="btn btn-info">Search</button>
+            </div>
+        </div>
+        </form>
+    </div>
+</div>
+
 <div id="report-data" class="row mb-5"></div>
 
 <div class="row mb-2 text-muted fw-light">
     <div class="col-lg-8">
-        <p>Methodlogy: Records that are missing a street, or have future issue_date are excluded.</p>
+        <p>Methodlogy: Streets with less than 3 summonses issued are excluded from street selection. Records that are missing a street, violation_county, or have future issue_date are excluded.</p>
     </div>
 </div>
 <div class="row">
@@ -116,7 +216,6 @@
     import FYCalendar from "./static/fy_calendar.js"
     import Punchcard from "./static/punchcard.js"
 
-    const report = {{.Report}}
 
     const parseDate = d3.utcParse("%Y-%m-%d")
     const FYLookup = {
@@ -269,8 +368,8 @@ const dtFormat = new Intl.DateTimeFormat("en-US");
 
 function getData(query) {
     return Promise.all([
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number,violation_county,violation_precinct&$limit=100000"+query),
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number,violation_county,violation_precinct&$limit=100000"+query)
+    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
+    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
     ]).then(results => Promise.all(results.map(r => r.text())))
     .then(results => {
         const d1 = d3.csvParse(results[0])
@@ -279,25 +378,43 @@ function getData(query) {
         return d1
     })
 }
-    
-// function to query NYC Open Data and render D3 calendar chart
-function queryNYCOpenData() {
 
-    const street = report.Streets;
-    const issuingAgency = report.Agency;
-    const borough = report.Borough
-    const houseStart = report.HouseStart;
-    const houseEnd = report.HouseEnd;
-    const validIntersections = report.Intersections;
+const enOrdinalRules = new Intl.PluralRules("en-US", { type: "ordinal" });
+
+const suffixes = new Map([
+  ["one", "st"],
+  ["two", "nd"],
+  ["few", "rd"],
+  ["other", "th"],
+]);
+const formatOrdinals = (n) => {
+//   const v = parseInt(n, 10)
+  const rule = enOrdinalRules.select(n);
+  const suffix = suffixes.get(rule);
+  return `${n}${suffix}`;
+};
+
+// function to query NYC Open Data and render D3 calendar chart
+function queryNYCOpenData(evt) {
+    evt.preventDefault();
+    const precinctEl = document.getElementById("precinct-select")
+    const precinct = precinctEl.value
+
+    const issuingAgency = "P"
+    let end = FY.end[issuingAgency]
+    dayjs.extend(dayjs_plugin_utc)
+    let startDate = dayjs(end).utcOffset(0).date(1).subtract(11, 'month').toDate()
 
     document.getElementById("report-data").innerHTML = ''
     const el = document.createElement("div");
     el.className = "col-12 my-2 py-2 bg-white";
     document.getElementById("report-data").appendChild(el)
     const heading = document.createElement("h2")
-    heading.innerText = `Violations on ${houseStart}-${houseEnd} ${street.join(", ")}`
+    const dateFormat = d3.utcFormat("%Y-%m-%d")
+    heading.innerText = `Violations written by Police in ${formatOrdinals(precinct)} Precinct between ${dateFormat(startDate)} and ${dateFormat(end)}`
     // heading.class="m-3"
     el.appendChild(heading)
+
 
     let spinner = document.createElement("div")
     spinner.className = "spinner-border m-5"
@@ -305,97 +422,19 @@ function queryNYCOpenData() {
     // spinner.innerText = "Loading ..." FIXME: invalid html structure; see https://getbootstrap.com/docs/5.2/components/spinners/
     el.appendChild(spinner)
 
-    // TODO: summons_number
-    let filters = [];
-    dayjs.extend(dayjs_plugin_utc)
-    let end = issuingAgency == "any" ? FY.end.P :FY.end[issuingAgency]
-    let startDate = dayjs(end).utcOffset(0).date(1).subtract(11, 'month').toDate()
-    const dateFormat = d3.utcFormat("%Y-%m-%d")
+    let filters = [
+       `issue_date between '${dateFormat(startDate)}T00:00:00' and '${dateFormat(end)}T23:59:59'`
+    ];
     let displayFilters = [
       `issue_date between ${dateFormat(startDate)} and ${dateFormat(end)}`,
     ];
 
-    if (street == null || street.length == 0) {
-        let err = el.appendChild(document.createElement("div"));
-        err.className="alert"
-        err.innerText="Error: street not selected"
-        el.removeChild(spinner)
-        return;
-    } else if (street.length == 1) {
-        filters.push(`street_name="${street[0]}"`)
-        displayFilters.push(`street_name="${street[0]}"`)
-    } else {
-        filters.push(`street_name in ('${street.join("','")}')`)
-        displayFilters.push(`street_name in ('${street.join("','")}')`)
-    }
-
-    if (!isNaN(houseStart) && !isNaN(houseEnd)) {
-        displayFilters.push(`house_number between ${houseStart} and ${houseEnd}`)
-    }
-    if (validIntersections.length > 1 ) {
-        displayFilters.push(`OR intersecting_street endswith one of ('${validIntersections.join("', '")}')`)
-    } else if (validIntersections.length == 1 ) {
-        displayFilters.push(`OR intersecting_street endswith '${validIntersections[0]}'`)
-    }
-
-    switch (borough) {
-        case "Brooklyn":
-            filters.push(`(violation_county in ('BK', 'K', 'Kings) or violation_county is null)`)
-            displayFilters.push(`violation_county in ('BK', 'K', 'Kings') // Brooklyn`)
-            break;
-        case "Manhattan":
-            filters.push(`(violation_county in ('NY', 'MN') or violation_county is null)`)
-            displayFilters.push(`violation_county in ('NY', 'MN') // Manhattan`)
-            break;
-        case "Bronx":
-            filters.push(`(violation_county in ('BX', 'Bronx') or violation_county is null)`)
-            displayFilters.push(`violation_county in ('BX', 'Bronx') // Bronx`)
-            break;
-        case "Queens":
-            filters.push(`(violation_county in ('Q', 'QN', 'Qns')  or violation_county is null)`)
-            displayFilters.push(`violation_county in ('Q', 'QN', 'Qns') // Queens`)
-            break;
-        case "Staten Island":
-            filters.push(`(violation_county in ('R', 'Rich', 'ST')  or violation_county is null)`)
-            displayFilters.push(`violation_county in ('R', 'Rich', 'ST') // Staten Island`)
-            break;
-    }
-
-    if (issuingAgency != "all") {
-        filters.push(`issuing_agency='${issuingAgency}'`)
-        displayFilters.push(`issuing_agency='${issuingAgency}' // ${agencyLookup[issuingAgency]}`)
-    } else {
-        filters.push(`issuing_agency in ('T','P','S')` )
-        displayFilters.push(`issuing_agency in ('T','P','S') // Traffic, NYPD, Sanitation` )
-    }
+    filters.push(`violation_precinct = ${precinct}`)
+    displayFilters.push(`violation_precinct = ${precinct}`)
+    filters.push(`issuing_agency='${issuingAgency}'`)
+    displayFilters.push(`issuing_agency='${issuingAgency}' // ${agencyLookup[issuingAgency]}`)
     const queryString = `&$where=${filters.join(" AND ")}`
 
-    function isHouseMatch(h, houseStart, houseEnd) {
-        if (isNaN(houseStart) || isNaN(houseEnd)) { return true;}
-        if (houseStart > houseEnd) { return false }
-        if (h === "") { return false}
-        // console.log(h, houseStart, houseEnd)
-        h = parseInt(h, 10)
-        if (isNaN(h)) { return false }
-        if (h < houseStart || h > houseEnd) { return false }
-        return true
-    }
-    function isIntersectingMatch(i, options) {
-        if (options.length == 0) { return false ;} // default to match none
-        const s = i.toLowerCase()
-        .replace(/.+ (.+\/of .+$)/, '$1') // strip the prefix before "w/of street"
-        // console.log(i, s, options.indexOf(s))
-        return options.indexOf(s) !== -1
-    }
-    function precinctCounty(p) {
-        const precinct = +p
-        if (precinct >=1 && precinct <= 34) { return "Manhattan"}
-        if (precinct >=60 && precinct <= 94) { return "Brooklyn"}
-        if (precinct >=40 && precinct <= 52) { return "Bronx"}
-        if (precinct >=100 && precinct <= 115) { return "Queens"}
-        if (precinct >=120 && precinct <= 123) { return "Staten Island"}
-        return ""
-    }
 
     getData(queryString).then(function(data) {
         // parse date strings to Date objects
@@ -426,23 +465,12 @@ function queryNYCOpenData() {
 
         let seenSummons = {}
         data = data.filter( d=> { 
-            if (d.violation_county == "" && precinctCounty(d.violation_precinct) != borough) {return false}
             if (d.issue_date < startDate || d.issue_date > end) { return false; }
-            if (houseStart == NaN && houseEnd == NaN && validIntersections.length == 0) { return true;}
-            // records must either match on an intersection (if set) XOR a house number
-            let match = false
-            if (d.intersecting_street !== "") { 
-                match = isIntersectingMatch(d.intersecting_street, validIntersections)
-            } else {
-                match =  isHouseMatch(d.house_number , houseStart, houseEnd)
-            }
-            if (!match) { return match}
-
             // dedupe across two fiscal year datasets - they have overlap
             const key = d.summons_number + ' ' +  d.violation_code
             if (seenSummons[key])  return false
             seenSummons[key] = true
-            return match
+            return true
         });
         seenSummons = null
 
@@ -460,12 +488,15 @@ function queryNYCOpenData() {
             topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
         }
 
+
+
         const violationsByDay = groupByDate.map(([k,v]) => {return {date:k, count:v}})
         const groupOfDate = violationsByDay.map(d => d.date.toDateString())
         // extend to include zero counts for empty days
         violationsByDay.push(... d3.utcDay.range(startDate, end).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, count:0}}))
 
-        const groupByAgency = d3.rollups(parkingData, v => v.length, d => d.issuing_agency);
+        // const groupByAgency = d3.rollups(parkingData, v => v.length, d => d.issuing_agency);
+        const groupByAgency = []
         const groupByViolation = d3.rollups(parkingData, v => v.length, d => d.violation_code);
         let topViolation = undefined
         let topViolationCount = undefined
@@ -480,6 +511,7 @@ function queryNYCOpenData() {
             nonParkingTopViolation = d3.greatest(nonParkingGroupByViolation, ([, v]) => v)[0];
             nonParkingTopViolationCount = d3.greatest(nonParkingGroupByViolation, ([, v]) => v)[1];
         }
+
         const dtFormatLong = new Intl.DateTimeFormat("en-US", {
             weekday: "short",
             year: "numeric",
@@ -494,7 +526,7 @@ function queryNYCOpenData() {
         summary.className="summary"
         let summaryParagraphs = [
             `<mark>${parkingData.length}</mark> parking violations were issued`,
-            issuingAgency != "all" ? ` by <mark>${agencyLookup[issuingAgency]}</mark> `: "",
+            ` by <mark>${agencyLookup[issuingAgency]} Precinct ${precinct}</mark> `,
             ` on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
           <mark>${d3.utcFormat("%b %d %Y")(startDate)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(end)}</mark> 
           (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days). `
@@ -523,12 +555,13 @@ function queryNYCOpenData() {
             summaryParagraphs.push(`There ${nonParkingData.length == 1 ? "was":"were"} <mark>${nonParkingData.length}</mark> non-parking violations issued. `)
             summaryParagraphs.push(`The most common non-parking violation was <mark>${ViolationCodes[nonParkingTopViolation]}</mark> (issued <mark>${nonParkingTopViolationCount}</mark> times). `)
         }
+
         // TODO: use the filter not the results
-        if (groupByAgency.length > 1) {
-            groupByAgency.sort((a, b) => d3.descending(a[1], b[1])).forEach(([agency, count]) => {
-                summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> parking violations (<mark>${d3.format("0.1%")(count/parkingData.length)}</mark>). `)
-            })
-        }
+        // if (groupByAgency.length > 1) {
+        //     groupByAgency.sort((a, b) => d3.descending(a[1], b[1])).forEach(([agency, count]) => {
+        //         summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> parking violations (<mark>${d3.format("0.1%")(count/parkingData.length)}</mark>). `)
+        //     })
+        // }
 
         summary.innerHTML = summaryParagraphs.join("")
 
@@ -579,6 +612,7 @@ function queryNYCOpenData() {
         container.className = "calendar-chart mb-4"
         container.appendChild(calendarChart)
         el.appendChild(container)
+
         if (parkingData.length > 0) {
             // create calendar chart
             const punchcard = Punchcard(parkingData, {
@@ -603,30 +637,30 @@ function queryNYCOpenData() {
             el.appendChild(container)
         }
 
-        {{if .SavePreview }}
-        html2canvas(document.body, {
-            backgroundColor: "#ffd900",
-            width: 800,
-            height: 400,
-            windowWidth: 800,
-            widowHeight: 400,
-            onclone: d => {
-                // console.log(d);
-                d.getElementsByTagName("body")[0].className="render"
-            },
-            ignoreElements: e => e.classList.contains("hide-render")
-        }).then(function(canvas) {
-            canvas.toBlob((blob) => {
-                fetch('', {
-                    method: "put",
-                    headers: {
-                        'Content-type': 'image/png'
-                    },
-                    body: blob
-                })
-            })
-        });
-        {{end}}
+        // {{if .SavePreview }}
+        // html2canvas(document.body, {
+        //     backgroundColor: "#ffd900",
+        //     width: 800,
+        //     height: 400,
+        //     windowWidth: 800,
+        //     widowHeight: 400,
+        //     onclone: d => {
+        //         // console.log(d);
+        //         d.getElementsByTagName("body")[0].className="render"
+        //     },
+        //     ignoreElements: e => e.classList.contains("hide-render")
+        // }).then(function(canvas) {
+        //     canvas.toBlob((blob) => {
+        //         fetch('', {
+        //             method: "put",
+        //             headers: {
+        //                 'Content-type': 'image/png'
+        //             },
+        //             body: blob
+        //         })
+        //     })
+        // });
+        // {{end}}
 
 
         // container = document.createElement("div")
@@ -684,7 +718,7 @@ function queryNYCOpenData() {
     });
 
 }
-queryNYCOpenData();
+document.getElementById("query-button").addEventListener("click", queryNYCOpenData);
 
 
 </script>
