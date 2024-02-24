@@ -395,8 +395,7 @@ const formatOrdinals = (n) => {
 };
 
 // function to query NYC Open Data and render D3 calendar chart
-function queryNYCOpenData(evt) {
-    evt.preventDefault();
+function queryNYCOpenData() {
     const precinctEl = document.getElementById("precinct-select")
     const precinct = precinctEl.value
 
@@ -718,7 +717,36 @@ function queryNYCOpenData(evt) {
     });
 
 }
-document.getElementById("query-button").addEventListener("click", queryNYCOpenData);
+function nullString(s) {
+    return s === null ? "" : s
+}
+function defaultString(s, d) {
+    return s === "" ? d : s
+}
+
+function submitForm(evt) {
+    evt.preventDefault();
+    var qs = new URLSearchParams()
+    qs.set("precinct", document.getElementById("precinct-select").value)
+    const l = qs.toString();
+    console.log('qs', l)
+    history.pushState(null, document.title, l.length == 0 ? window.location.pathname : window.location.pathname + "?" + l)
+    queryNYCOpenData()
+}
+
+function bootstrap() {
+        // console.log("bootstrap")
+    document.getElementById("query-button").addEventListener("click", submitForm);
+
+    const urlSearchParams = new URLSearchParams(window.location.search)
+    let urlPrecinct = nullString(urlSearchParams.get("precinct"))
+    document.getElementById("precinct-select").value = defaultString(urlPrecinct, "1")
+    if (urlPrecinct != "") {
+        queryNYCOpenData()
+    }
+}
+bootstrap()
+
 
 
 </script>
