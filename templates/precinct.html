@@ -488,8 +488,6 @@ function queryNYCOpenData(evt) {
             topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
         }
 
-
-
         const violationsByDay = groupByDate.map(([k,v]) => {return {date:k, count:v}})
         const groupOfDate = violationsByDay.map(d => d.date.toDateString())
         // extend to include zero counts for empty days
@@ -526,10 +524,12 @@ function queryNYCOpenData(evt) {
         summary.className="summary"
         let summaryParagraphs = [
             `<mark>${parkingData.length}</mark> parking violations were issued`,
-            ` by <mark>${agencyLookup[issuingAgency]} Precinct ${precinct}</mark> `,
+            ` by <mark>${agencyLookup[issuingAgency]}</mark> in ${formatOrdinals(precinct)} Precinct`,
             ` on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
           <mark>${d3.utcFormat("%b %d %Y")(startDate)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(end)}</mark> 
-          (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days). `
+          (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days)`,
+          parkingData.length > 1 ? ` an average of <mark>${d3.format("0.1f")(parkingData.length / groupByDate.length)}</mark> per day` : "",
+          `.`
         ]
 
         summary.innerHTML = summaryParagraphs.join("")
