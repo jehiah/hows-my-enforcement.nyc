@@ -112,7 +112,6 @@ fetch("https://data.cityofnewyork.us/resource/"+Resource + ".json?$where=summons
 .then((data) => {
     const el = document.getElementById("results")
     el.innerHTML = ""
-    console.log(data)
     if (data.length == 0) {
         el.innerText = "Not Found"
         return
