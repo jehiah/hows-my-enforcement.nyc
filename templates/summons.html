@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/static/favicon_96.png">
+    <title>NYC Summons {{.SummonsNumber}}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.3/dist/d3.min.js" integrity="sha256-z9jvEmgHGEfWO4rPfEXUGKFd6UkxkavfJ0zf3qT31O4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js" integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/utc.js" integrity="sha256-qDfIIxqpRhYWa543p6AHZ323xT3B8O6iLZFUAWtEQJw=" crossorigin="anonymous"></script>    
+
+<style>
+    body {
+        background-color:#ffd900;
+
+    }
+    .table-xsm {
+        font-size:80%;
+    }
+    .table-xsm>:not(caption)>*>* {
+        padding: 0.1rem 0.1rem;
+    }
+    .summary {
+        line-height: 1.7rem;
+    }
+    footer {
+    text-align: center;
+    font-size: .75rem;
+    color: #999;
+    padding: 2rem 1rem;
+    }
+    footer a:link, footer a:visited {
+    color: #777;
+    }
+    footer p {
+    margin-bottom: .5rem;
+    }
+    .table-striped>tbody>tr.non-parking-violation > td {
+        color:#999;
+    }
+    h1 > a {
+        text-decoration: none;
+        color:inherit;
+    }
+    h1 > a:hover {
+        text-decoration: underline;
+        color:inherit;
+    }
+    .table>thead>tr>th:first-child, .table>tbody>tr>td:first-child {
+        padding-left: .5rem;
+    }
+
+    .agency { display: none;}
+    @media (min-width: 768px) { 
+        .agency { display: table-cell; }
+    }
+    .render mark {
+        white-space: nowrap;
+    }
+    .tooltip {
+        background-color: #fff;
+        border-color: #777;
+        border-radius: 3px;
+        font-size: .8rem;
+    }
+    rect.cell.highlighted {
+        stroke: #000;
+    }
+</style>
+</head>
+<body>
+
+<div class="container mt-2 mt-lg-3 mt-xl-5 px-3">
+
+    <div class="row">
+        <div class="col-12 col-lg-10 col-xl-8">
+        <h1><a href="/">How is NYC Parking Enforcement?</a></h1>
+        <p class="hide-render">Is NYPD Traffic's parking enforcement consistent and rigerous on your block? <a href="/">Check</a>!</p>
+        <p class="fw-light hide-render">Enforcement of parking regulations should be consistent and rigorous.</p>
+        </div>
+    </div>
+
+
+    <div class="row">
+       <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
+
+        <h2>Summons Number {{.SummonsNumber}} </h2>
+
+        <div id="results"><div class="spinner-border m-5"></div></div>
+
+    </div>
+</div>
+
+<div id="report-data" class="row mb-5"></div>
+
+<div class="row">
+    <footer>
+        <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
+        <p>Data from <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2024/pvqr-7yc4">NYC Open Data</a></p>
+    </footer>
+</div>
+
+</div>
+
+
+<script type="module">
+const Resource = "nc67-uf89" // https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89
+fetch("https://data.cityofnewyork.us/resource/"+Resource + ".json?$where=summons_number={{.SummonsNumber}}")
+.then((response) => response.json())
+.then((data) => {
+    const el = document.getElementById("results")
+    el.innerHTML = ""
+    console.log(data)
+    if (data.length == 0) {
+        el.innerText = "Not Found"
+        return
+    }
+
+    const row = data[0]
+
+    const table = document.createElement("table")
+    table.className = "table table-sm table-xsm table-striped mb-2 p-2"
+    const tbody = table.appendChild(document.createElement("tbody"))
+
+    let tr = tbody.appendChild(document.createElement("tr"))
+    tr.appendChild(document.createElement("th")).innerText = "Issuing Agency"
+    tr.appendChild(document.createElement("td")).innerText = row.issuing_agency
+    tr = tbody.appendChild(document.createElement("tr"))
+    tr.appendChild(document.createElement("th")).innerText = "Issue Date"
+    tr.appendChild(document.createElement("td")).innerText = row.issue_date + " " + row.violation_time
+    tr = tbody.appendChild(document.createElement("tr"))
+    tr.appendChild(document.createElement("th")).innerText = "Vehicle"
+    tr.appendChild(document.createElement("td")).innerText = `(${row.license_type}) ${row.state}:${row.plate}`
+    tr = tbody.appendChild(document.createElement("tr"))
+    tr.appendChild(document.createElement("th")).innerText = "Violation"
+    tr.appendChild(document.createElement("td")).innerText = row.violation
+    tr = tbody.appendChild(document.createElement("tr"))
+    tr.appendChild(document.createElement("th")).innerText = "Fine"
+    tr.appendChild(document.createElement("td")).innerText = "$" + row.fine_amount
+    if (row.penalty_amount != "0") {
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "+ Penalty Amount"
+        tr.appendChild(document.createElement("td")).innerText = "$" + row.penalty_amount
+    }
+    if (row.interest_amount != "0") {
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "+ Interest"
+        tr.appendChild(document.createElement("td")).innerText = "$" + row.interest_amount
+    }
+    if (row.payment_amount != "0") {
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "- Payment"
+        tr.appendChild(document.createElement("td")).innerText = "$" + row.payment_amount
+    }
+    tr = tbody.appendChild(document.createElement("tr"))
+    tr.appendChild(document.createElement("th")).innerText = "= Amount Due"
+    tr.appendChild(document.createElement("td")).innerText = "$" + row.amount_due
+
+
+    tr = tbody.appendChild(document.createElement("tr"))
+    tr.appendChild(document.createElement("th"))
+    const a = tr.appendChild(document.createElement("td")).appendChild(document.createElement('a'))
+    a.href = row.summons_image.url
+    a.innerText = "View Summons"
+
+    el.appendChild(table)
+})
+
+</script>
+</body>
+</html>

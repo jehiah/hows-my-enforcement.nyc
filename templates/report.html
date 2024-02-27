@@ -669,7 +669,9 @@ function queryNYCOpenData() {
             tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time // TODO format
             let cell = tr.appendChild(document.createElement("td"))
             cell.className = "summons font-monospace"
-            cell.innerText = d.summons_number
+            let a = cell.appendChild(document.createElement("a"))
+            a.href = "/summons?" + (new URLSearchParams({"number":d.summons_number})).toString()
+            a.innerText = d.summons_number
             cell = tr.appendChild(document.createElement("td"))
             cell.innerText = d.registration_state + ":" + d.plate_id 
             cell.className = "font-monospace"

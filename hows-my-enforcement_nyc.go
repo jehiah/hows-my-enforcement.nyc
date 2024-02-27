@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -77,6 +78,12 @@ func (a *App) WebPermissionError403(w http.ResponseWriter, msg string) {
 		msg = "Permission Denied"
 	}
 	a.WebError(w, 403, msg)
+}
+func (a *App) WebBadRequestError400(w http.ResponseWriter, msg string) {
+	if msg == "" {
+		msg = "Bad Request"
+	}
+	a.WebError(w, 400, msg)
 }
 
 func (a *App) WebError(w http.ResponseWriter, code int, msg string) {
@@ -210,6 +217,30 @@ func (a *App) Precinct(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (a *App) Summons(w http.ResponseWriter, r *http.Request) {
+
+	type Page struct {
+		SummonsNumber int64
+	}
+	body := Page{}
+	r.ParseForm()
+	var err error
+	body.SummonsNumber, err = strconv.ParseInt(r.Form.Get("number"), 10, 64)
+	// nypd summonses are ~~ 1493972194
+	// nypd traffic summonses are ~~ 9031199333
+	if err != nil || body.SummonsNumber < 1000000000 || body.SummonsNumber > 10000000000 {
+		a.WebBadRequestError400(w, "")
+		return
+	}
+
+	t := newTemplate(a.templateFS, "summons.html")
+	err = t.ExecuteTemplate(w, "summons.html", body)
+	if err != nil {
+		log.Print(err)
+		a.WebInternalError500(w, "")
+	}
+}
+
 func (app *App) User(*http.Request) account.UID {
 	return account.UID("test")
 }
@@ -223,6 +254,9 @@ func (app App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		case "/precinct":
 			app.Precinct(w, r)
+			return
+		case "/summons":
+			app.Summons(w, r)
 			return
 		case "/robots.txt":
 			app.RobotsTXT(w, r)
