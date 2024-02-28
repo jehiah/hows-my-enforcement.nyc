@@ -671,6 +671,7 @@ function queryNYCOpenData() {
             cell.className = "summons font-monospace"
             let a = cell.appendChild(document.createElement("a"))
             a.href = "/summons?" + (new URLSearchParams({"number":d.summons_number})).toString()
+            a.rel = "nofollow"
             a.innerText = d.summons_number
             cell = tr.appendChild(document.createElement("td"))
             cell.innerText = d.registration_state + ":" + d.plate_id 
