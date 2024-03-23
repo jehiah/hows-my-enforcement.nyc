@@ -14,7 +14,6 @@
 <style>
     body {
         background-color:#ffd900;
-
     }
     .table-xsm {
         font-size:80%;
@@ -147,6 +146,11 @@ fetch("https://data.cityofnewyork.us/resource/"+Resource + ".json?$where=summons
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "+ Interest"
         tr.appendChild(document.createElement("td")).innerText = "$" + row.interest_amount
+    }
+    if (row.reduction_amount != "0") {
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "- Reduction"
+        tr.appendChild(document.createElement("td")).innerText = "$" + row.reduction_amount
     }
     if (row.payment_amount != "0") {
         tr = tbody.appendChild(document.createElement("tr"))
