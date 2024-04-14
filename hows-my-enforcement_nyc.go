@@ -22,6 +22,7 @@ import (
 	"github.com/gorilla/handlers"
 	"github.com/jehiah/hows-my-enforcement.nyc/internal/account"
 	"github.com/jehiah/hows-my-enforcement.nyc/internal/dthash"
+	"github.com/jehiah/hows-my-enforcement.nyc/internal/nycapi"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,6 +37,7 @@ type App struct {
 	firestore *firestore.Client
 	firebase  *auth.Client
 	storage   *storage.BucketHandle
+	nycAPI    nycapi.Client
 
 	staticHandler http.Handler
 	templateFS    fs.FS
@@ -264,6 +266,9 @@ func (app App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		case "/summons":
 			app.Summons(w, r)
 			return
+		case "/311":
+			app.Lookup311(w, r)
+			return
 		case "/robots.txt":
 			app.RobotsTXT(w, r)
 			return
@@ -280,6 +285,9 @@ func (app App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/":
 			app.IndexPost(w, r)
+			return
+		case "/data/311":
+			app.Lookup311Post(w, r)
 			return
 		}
 	case "PUT":
@@ -320,6 +328,9 @@ func main() {
 		firestore:  createClient(ctx),
 		templateFS: content,
 		storage:    client.Bucket("hows-my-enforcement-nyc"),
+		nycAPI: nycapi.Client{
+			SubscriptionKey: os.Getenv("OCP_APM_KEY"),
+		},
 	}
 	if *devMode {
 		app.templateFS = os.DirFS(".")

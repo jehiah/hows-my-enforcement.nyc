@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/static/favicon_96.png">
+    <meta name="robots" content="noindex, nofollow" />.
+    <title>311 Lookup</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.3/dist/d3.min.js" integrity="sha256-z9jvEmgHGEfWO4rPfEXUGKFd6UkxkavfJ0zf3qT31O4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js" integrity="sha256-nP25Pzivzy0Har7NZtMr/TODzfGWdlTrwmomYF2vQXM=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/plugin/utc.js" integrity="sha256-qDfIIxqpRhYWa543p6AHZ323xT3B8O6iLZFUAWtEQJw=" crossorigin="anonymous"></script>    
+
+<style>
+    body {
+        background-color:#ffd900;
+    }
+    .table-xsm {
+        font-size:80%;
+    }
+    .table-xsm>:not(caption)>*>* {
+        padding: 0.1rem 0.1rem;
+    }
+    .summary {
+        line-height: 1.7rem;
+    }
+    footer {
+    text-align: center;
+    font-size: .75rem;
+    color: #999;
+    padding: 2rem 1rem;
+    }
+    footer a:link, footer a:visited {
+    color: #777;
+    }
+    footer p {
+    margin-bottom: .5rem;
+    }
+    .table-striped>tbody>tr.non-parking-violation > td {
+        color:#999;
+    }
+    h1 > a {
+        text-decoration: none;
+        color:inherit;
+    }
+    h1 > a:hover {
+        text-decoration: underline;
+        color:inherit;
+    }
+    .table>thead>tr>th:first-child, .table>tbody>tr>td:first-child {
+        padding-left: .5rem;
+    }
+
+    .agency { display: none;}
+    @media (min-width: 768px) { 
+        .agency { display: table-cell; }
+    }
+    .render mark {
+        white-space: nowrap;
+    }
+    .tooltip {
+        background-color: #fff;
+        border-color: #777;
+        border-radius: 3px;
+        font-size: .8rem;
+    }
+    rect.cell.highlighted {
+        stroke: #000;
+    }
+</style>
+</head>
+<body>
+
+<div class="container mt-2 mt-lg-3 mt-xl-5 px-3">
+
+    <div class="row">
+        <div class="col-12 col-lg-10 col-xl-8">
+        <h1><a href="/">How is NYC Parking Enforcement?</a></h1>
+        <p class="hide-render">Is NYPD Traffic's parking enforcement consistent and rigerous on your block? <a href="/">Check</a>!</p>
+        <p class="fw-light hide-render">Enforcement of parking regulations should be consistent and rigorous.</p>
+        </div>
+    </div>
+
+
+    <div class="row">
+       <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
+
+        <h2>311 Number</h2>
+        <div>
+            <input type="text" id="sr_number">
+        </div> 
+
+        <div id="results" style="display: none;"><div class="spinner-border m-5"></div></div>
+
+    </div>
+</div>
+
+<div class="row">
+    <footer>
+        <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
+        <p>Data from <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2024/pvqr-7yc4">NYC Open Data</a></p>
+    </footer>
+</div>
+
+</div>
+
+
+<script type="module">
+const formattedTime = new Intl.DateTimeFormat('en-US', {
+  hour: 'numeric',
+  minute: 'numeric',
+  hour12: true,
+  timeZone: 'UTC'
+});
+
+const formattedDateTime = new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  hour: 'numeric',
+  minute: 'numeric',
+  hour12: true,
+  timeZone: 'UTC'
+});
+
+function diffDates(start, end) {
+    // const date1 = new Date(start);
+    // const date2 = new Date(end);
+
+    // One day in milliseconds
+    const oneDay = 1000 * 60 * 60 * 24;
+    const oneHour = 1000 * 60 * 60;
+    const oneMinute = 1000 * 60;
+
+    // Calculating the time difference between two dates
+    const diffInTime = start.getTime() - end.getTime();
+
+    // Calculating the no. of days between two dates
+    const days = Math.round(diffInTime / oneDay);
+    if (days != 0) {
+      return {unit:"day", units:days}
+    }
+    const hours = Math.round(diffInTime / oneHour);
+    if (hours != 0) {
+      return {unit:"hour", units:hours}
+    }
+    const minutes = Math.round(diffInTime / oneMinute);
+    if (minutes != 0) {
+      return {unit:"minute", units:minutes}
+    }
+    return {unit:"second", units: Math.round(diffInTime / 1000) }
+}
+
+// const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+// function relativeDates(a, b) {
+//     const diff = diffDates(a, b);
+//     return rtf.format(diff.units, diff.unit);
+// }
+
+
+function fetch311(n) {
+    fetch("/data/311", {
+        method: "POST",
+        body: JSON.stringify({sr_number: n}),
+        headers: {
+            "Content-Type": "application/json"
+        }
+    }).then((response) => response.json())
+    .then(data => {
+
+        // console.log(data)
+
+        const el = document.getElementById("results")
+        el.innerHTML = ""
+
+        const created = new Date(data.DateTimeSubmitted+"Z")
+
+        const table = document.createElement("table")
+        table.className = "table table-sm table-xsm table-striped my-4 p-2"
+        const tbody = table.appendChild(document.createElement("tbody"))
+
+        let tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Agency"
+        tr.appendChild(document.createElement("td")).innerText = data.Agency
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "SR Number"
+        tr.appendChild(document.createElement("td")).appendChild(document.createElement('code')).innerText = data.SRNumber
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Problem"
+        tr.appendChild(document.createElement("td")).innerText = data.Problem
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Problem Details"
+        tr.appendChild(document.createElement("td")).innerText = data.ProblemDetails
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Address"
+        tr.appendChild(document.createElement("td")).innerText = data.Address
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Description"
+        tr.appendChild(document.createElement("td")).innerText = data.Description
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Submitted"
+        tr.appendChild(document.createElement("td")).innerText = formattedDateTime.format(created)
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Status"
+        tr.appendChild(document.createElement("td")).innerText = data.Status
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Resolution"
+        tr.appendChild(document.createElement("td")).innerText = data.ResolutionAction
+        let updated = undefined
+        if (data.ResolutionActionUpdatedDate.length > 0) {
+            updated = new Date(data.ResolutionActionUpdatedDate+"Z")
+            tr = tbody.appendChild(document.createElement("tr"))
+            tr.appendChild(document.createElement("th")).innerText = "Resolution Date"
+            tr.appendChild(document.createElement("td")).innerText = formattedDateTime.format(updated)
+            tr = tbody.appendChild(document.createElement("tr"))
+            tr.appendChild(document.createElement("th")).innerText = "Response Time"
+            const diff = diffDates(updated, created)
+            tr.appendChild(document.createElement("td")).innerText = `${diff.units} ${diff.unit}`
+        }
+
+        el.appendChild(table)
+
+        let p = el.appendChild(document.createElement("p"))
+        // link to srid with data.Link
+        let a = p.appendChild(document.createElement('a'))
+        a.href = data.Link
+        a.appendChild(document.createElement('code')).innerText = data.SRNumber
+
+
+        p.appendChild(document.createTextNode(` submitted ${formattedTime.format(created)} 
+        closed ${formattedTime.format(updated)} as "${data.ResolutionAction}" description:"${data.Description}"`))
+
+    })
+}
+
+document.getElementById("sr_number").addEventListener("change", (e) => {
+    const n = e.target.value
+    if (n.length == 0) {
+        document.getElementById("results").style.display = "none"
+        return
+    }
+    document.getElementById("results").style.display = ""
+    fetch311(n)
+})
+
+const q = new URLSearchParams(window.location.search);
+const SummonsNumber = q.get('sr');
+if (SummonsNumber) {
+    console.log("SummonsNumber", SummonsNumber )
+    document.getElementById("sr_number").value = SummonsNumber
+    document.getElementById("results").style.display = ""
+    fetch311(SummonsNumber)
+}
+
+
+</script>
+</body>
+</html>
