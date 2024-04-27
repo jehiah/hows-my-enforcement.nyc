@@ -246,12 +246,12 @@ document.getElementById("sr_number").addEventListener("change", (e) => {
 })
 
 const q = new URLSearchParams(window.location.search);
-const SummonsNumber = q.get('sr');
-if (SummonsNumber) {
-    console.log("SummonsNumber", SummonsNumber )
-    document.getElementById("sr_number").value = SummonsNumber
+const SRNumber = q.get('sr');
+if (SRNumber) {
+    console.log("SRNumber", SRNumber )
+    document.getElementById("sr_number").value = SRNumber
     document.getElementById("results").style.display = ""
-    fetch311(SummonsNumber)
+    fetch311(SRNumber)
 }
 
 

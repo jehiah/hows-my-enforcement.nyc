@@ -302,7 +302,6 @@ function queryNYCOpenData() {
     // spinner.innerText = "Loading ..." FIXME: invalid html structure; see https://getbootstrap.com/docs/5.2/components/spinners/
     el.appendChild(spinner)
 
-    // TODO: summons_number
     let filters = [];
     dayjs.extend(dayjs_plugin_utc)
     let end = issuingAgency == "any" ? FY.end.P :FY.end[issuingAgency]
