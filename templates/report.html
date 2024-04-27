@@ -6,11 +6,11 @@
     <link rel="icon" href="/static/favicon_96.png">
     <title>How is NYC Parking Enforcement?</title>
 
-    {{ if .Report.PreviewImage }}
-    <meta property="og:title" content="How is NYC Parking Enforcement?" />
+    <meta property="og:title" content="NYC Parking Enforcement" />
     <meta property="og:type" content="website" />
     <meta property="og:description" content="{{.Report.Description}}" />
     <meta property="og:url" content="https://hows-my-enforcement.nyc{{.Report.Link}}" />
+    {{ if .Report.PreviewImage }}
     <meta property="og:image" content="{{.Report.PublicPreview}}" />
     <meta property="og:image:type" content="image/png" />
     {{ end }}
@@ -110,8 +110,6 @@
 
 
 <script type="module">
-    // var utc = require('dayjs/plugin/utc')
-    // dayjs.extend(utc)
     import FYCalendar from "./static/fy_calendar.js"
     import Punchcard from "./static/punchcard.js"
 

@@ -22,6 +22,7 @@ type Report struct {
 	UID                  account.UID
 	Created              time.Time
 	PreviewImage         string
+	PreviewLastUpdated   time.Time
 }
 type ReportID string
 
@@ -35,6 +36,21 @@ func IsValidReportID(r ReportID) bool {
 
 func (r Report) Link() string {
 	return "/" + string(r.ID)
+}
+
+func (r Report) IsPreviewStale() bool {
+	switch {
+	case r.PreviewImage == "":
+		return true
+	case r.PreviewLastUpdated.IsZero():
+		return true
+	case r.PreviewLastUpdated.Unix() == 0:
+		return true
+	case time.Since(r.PreviewLastUpdated) > time.Hour*24*30:
+		return true
+	default:
+		return false
+	}
 }
 
 func (r Report) PublicPreview() string {

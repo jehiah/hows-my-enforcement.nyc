@@ -1,33 +1,37 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"cloud.google.com/go/firestore"
+	"github.com/jehiah/hows-my-enforcement.nyc/internal/apiresponse"
 	log "github.com/sirupsen/logrus"
 )
 
+// SaveReportPreview saves a preview image to google storage
+// PUT /{report}
 func (a *App) SaveReportPreview(w http.ResponseWriter, r *http.Request) {
 	id := ReportID(r.PathValue("report"))
 	if !IsValidReportID(id) {
-		http.NotFound(w, r)
+		apiresponse.NotFound404(w)
 		return
 	}
 	ctx := r.Context()
 	report, err := a.GetReport(ctx, id)
 	if err != nil {
 		log.WithField("reportID", id).Errorf("%#v", err)
-		a.WebInternalError500(w, "")
+		apiresponse.InternalError500(w)
 		return
 	}
 	if report == nil {
-		http.Error(w, "Not Found", 404)
+		apiresponse.NotFound404(w)
 		return
 	}
-	if !a.devMode && report.PreviewImage != "" {
-		fmt.Fprintf(w, "NA")
+	// don't allow overwrites unless it's stale
+	if !a.devMode && !report.IsPreviewStale() {
+		apiresponse.OK200(w, "OK")
 		return
 	}
 
@@ -38,23 +42,26 @@ func (a *App) SaveReportPreview(w http.ResponseWriter, r *http.Request) {
 	_, err = io.Copy(wc, io.LimitReader(r.Body, 5*1024*1024)) // 5M
 	if err != nil {
 		log.WithField("reportID", id).Errorf("%#v", err)
-		http.Error(w, "unexpected error", 500)
+		apiresponse.InternalError500(w)
 		return
 	}
 	err = wc.Close()
 	if err != nil {
 		log.WithField("reportID", id).Errorf("%#v", err)
-		http.Error(w, "unexpected error", 500)
+		apiresponse.InternalError500(w)
 		return
 	}
 
 	_, err = a.firestore.Collection("reports").Doc(string(id)).Update(ctx,
-		[]firestore.Update{{Path: "PreviewImage", Value: string(id) + ".png"}})
+		[]firestore.Update{
+			{Path: "PreviewImage", Value: string(id) + ".png"},
+			{Path: "PreviewLastUpdated", Value: time.Now()},
+		})
 	if err != nil {
 		log.WithField("reportID", id).Errorf("%#v", err)
-		a.WebInternalError500(w, "")
+		apiresponse.InternalError500(w)
 		return
 	}
 
-	fmt.Fprintf(w, "OK")
+	apiresponse.OK200(w, "OK")
 }

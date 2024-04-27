@@ -203,7 +203,7 @@ func (a *App) Report(w http.ResponseWriter, r *http.Request) {
 	}
 	body := Page{
 		Report:      *report,
-		SavePreview: a.devMode || report.PreviewImage == "",
+		SavePreview: a.devMode || report.IsPreviewStale(),
 	}
 
 	err = t.ExecuteTemplate(w, "report.html", body)
