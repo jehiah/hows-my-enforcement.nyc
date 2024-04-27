@@ -1,76 +1,382 @@
-{"Precinct":123,"Borough":"Staten Island"}
-{"Precinct":122,"Borough":"Staten Island"}
-{"Precinct":60,"Borough":"Brooklyn"}
-{"Precinct":100,"Borough":"Queens"}
-{"Precinct":61,"Borough":"Brooklyn"}
-{"Precinct":62,"Borough":"Brooklyn"}
-{"Precinct":101,"Borough":"Queens"}
-{"Precinct":121,"Borough":"Staten Island"}
-{"Precinct":66,"Borough":"Brooklyn"}
-{"Precinct":63,"Borough":"Brooklyn"}
-{"Precinct":70,"Borough":"Brooklyn"}
-{"Precinct":68,"Borough":"Brooklyn"}
-{"Precinct":120,"Borough":"Staten Island"}
-{"Precinct":69,"Borough":"Brooklyn"}
-{"Precinct":67,"Borough":"Brooklyn"}
-{"Precinct":72,"Borough":"Brooklyn"}
-{"Precinct":71,"Borough":"Brooklyn"}
-{"Precinct":73,"Borough":"Brooklyn"}
-{"Precinct":75,"Borough":"Brooklyn"}
-{"Precinct":77,"Borough":"Brooklyn"}
-{"Precinct":113,"Borough":"Queens"}
-{"Precinct":78,"Borough":"Brooklyn"}
-{"Precinct":106,"Borough":"Queens"}
-{"Precinct":76,"Borough":"Brooklyn"}
-{"Precinct":79,"Borough":"Brooklyn"}
-{"Precinct":81,"Borough":"Brooklyn"}
-{"Precinct":88,"Borough":"Brooklyn"}
-{"Precinct":84,"Borough":"Brooklyn"}
-{"Precinct":83,"Borough":"Brooklyn"}
-{"Precinct":102,"Borough":"Queens"}
-{"Precinct":104,"Borough":"Queens"}
-{"Precinct":90,"Borough":"Brooklyn"}
-{"Precinct":103,"Borough":"Queens"}
-{"Precinct":5,"Borough":"Manhattan"}
-{"Precinct":7,"Borough":"Manhattan"}
-{"Precinct":1,"Borough":"Manhattan"}
-{"Precinct":112,"Borough":"Queens"}
-{"Precinct":9,"Borough":"Manhattan"}
-{"Precinct":105,"Borough":"Queens"}
-{"Precinct":94,"Borough":"Brooklyn"}
-{"Precinct":107,"Borough":"Queens"}
-{"Precinct":6,"Borough":"Manhattan"}
-{"Precinct":10,"Borough":"Manhattan"}
-{"Precinct":108,"Borough":"Queens"}
-{"Precinct":110,"Borough":"Queens"}
-{"Precinct":14,"Borough":"Manhattan"}
-{"Precinct":17,"Borough":"Manhattan"}
-{"Precinct":115,"Borough":"Queens"}
-{"Precinct":111,"Borough":"Queens"}
-{"Precinct":109,"Borough":"Queens"}
-{"Precinct":18,"Borough":"Manhattan"}
-{"Precinct":19,"Borough":"Manhattan"}
-{"Precinct":114,"Borough":"Queens"}
-{"Precinct":20,"Borough":"Manhattan"}
-{"Precinct":23,"Borough":"Manhattan"}
-{"Precinct":24,"Borough":"Manhattan"}
-{"Precinct":25,"Borough":"Manhattan"}
-{"Precinct":28,"Borough":"Manhattan"}
-{"Precinct":40,"Borough":"Bronx"}
-{"Precinct":26,"Borough":"Manhattan"}
-{"Precinct":32,"Borough":"Manhattan"}
-{"Precinct":41,"Borough":"Bronx"}
-{"Precinct":42,"Borough":"Bronx"}
-{"Precinct":43,"Borough":"Bronx"}
-{"Precinct":30,"Borough":"Manhattan"}
-{"Precinct":45,"Borough":"Bronx"}
-{"Precinct":44,"Borough":"Bronx"}
-{"Precinct":33,"Borough":"Manhattan"}
-{"Precinct":48,"Borough":"Bronx"}
-{"Precinct":34,"Borough":"Manhattan"}
-{"Precinct":46,"Borough":"Bronx"}
-{"Precinct":49,"Borough":"Bronx"}
-{"Precinct":52,"Borough":"Bronx"}
-{"Precinct":50,"Borough":"Bronx"}
-{"Precinct":47,"Borough":"Bronx"}
-{"Precinct":13,"Borough":"Manhattan"}
+[
+  {
+    "Precinct": 123,
+    "Borough": "Staten Island",
+    "Desc": "123 Staten Island - 116 Main Street"
+  },
+  {
+    "Precinct": 122,
+    "Borough": "Staten Island",
+    "Desc": "122 Staten Island - 2320 Hylan Boulevard"
+  },
+  {
+    "Precinct": 60,
+    "Borough": "Brooklyn",
+    "Desc": "60 Brooklyn - 2951 West 8 Street"
+  },
+  {
+    "Precinct": 100,
+    "Borough": "Queens",
+    "Desc": "100 Queens - 92-24 Rockaway Beach Boulevard"
+  },
+  {
+    "Precinct": 61,
+    "Borough": "Brooklyn",
+    "Desc": "61 Brooklyn - 2575 Coney Island Avenue"
+  },
+  {
+    "Precinct": 62,
+    "Borough": "Brooklyn",
+    "Desc": "62 Brooklyn - 1925 Bath Avenue"
+  },
+  {
+    "Precinct": 101,
+    "Borough": "Queens",
+    "Desc": "101 Queens - 16-12 Mott Avenue"
+  },
+  {
+    "Precinct": 121,
+    "Borough": "Staten Island",
+    "Desc": "121 Staten Island - 970 Richmond Avenue"
+  },
+  {
+    "Precinct": 66,
+    "Borough": "Brooklyn",
+    "Desc": "66 Brooklyn - 5822 16 Avenue"
+  },
+  {
+    "Precinct": 63,
+    "Borough": "Brooklyn",
+    "Desc": "63 Brooklyn - 1844 Brooklyn Avenue"
+  },
+  {
+    "Precinct": 70,
+    "Borough": "Brooklyn",
+    "Desc": "70 Brooklyn - 154 Lawrence Avenue"
+  },
+  {
+    "Precinct": 68,
+    "Borough": "Brooklyn",
+    "Desc": "68 Brooklyn - 333 65 Street"
+  },
+  {
+    "Precinct": 120,
+    "Borough": "Staten Island",
+    "Desc": "120 Staten Island - 78 Richmond Terrace"
+  },
+  {
+    "Precinct": 69,
+    "Borough": "Brooklyn",
+    "Desc": "69 Brooklyn - 9720 Foster Avenue"
+  },
+  {
+    "Precinct": 67,
+    "Borough": "Brooklyn",
+    "Desc": "67 Brooklyn - 2820 Snyder Avenue"
+  },
+  {
+    "Precinct": 72,
+    "Borough": "Brooklyn",
+    "Desc": "72 Brooklyn - 830 4 Avenue"
+  },
+  {
+    "Precinct": 71,
+    "Borough": "Brooklyn",
+    "Desc": "71 Brooklyn - 421 Empire Boulevard"
+  },
+  {
+    "Precinct": 73,
+    "Borough": "Brooklyn",
+    "Desc": "73 Brooklyn - 1470 East New York Avenue"
+  },
+  {
+    "Precinct": 75,
+    "Borough": "Brooklyn",
+    "Desc": "75 Brooklyn - 1000 Sutter Avenue"
+  },
+  {
+    "Precinct": 77,
+    "Borough": "Brooklyn",
+    "Desc": "77 Brooklyn - 127 null"
+  },
+  {
+    "Precinct": 113,
+    "Borough": "Queens",
+    "Desc": "113 Queens - 167-02 Baisley Boulevard"
+  },
+  {
+    "Precinct": 78,
+    "Borough": "Brooklyn",
+    "Desc": "78 Brooklyn - 65 6 Avenue"
+  },
+  {
+    "Precinct": 106,
+    "Borough": "Queens",
+    "Desc": "106 Queens - 103-53 101 Street"
+  },
+  {
+    "Precinct": 76,
+    "Borough": "Brooklyn",
+    "Desc": "76 Brooklyn - 191 Union Street"
+  },
+  {
+    "Precinct": 79,
+    "Borough": "Brooklyn",
+    "Desc": "79 Brooklyn - 263-275 Tompkins Avenue"
+  },
+  {
+    "Precinct": 81,
+    "Borough": "Brooklyn",
+    "Desc": "81 Brooklyn - 30 Ralph Avenue"
+  },
+  {
+    "Precinct": 88,
+    "Borough": "Brooklyn",
+    "Desc": "88 Brooklyn - 298 Classon Avenue"
+  },
+  {
+    "Precinct": 84,
+    "Borough": "Brooklyn",
+    "Desc": "84 Brooklyn - 301 Gold Street"
+  },
+  {
+    "Precinct": 83,
+    "Borough": "Brooklyn",
+    "Desc": "83 Brooklyn - 480 Knickerbocker Avenue"
+  },
+  {
+    "Precinct": 102,
+    "Borough": "Queens",
+    "Desc": "102 Queens - 87-34 118 Street"
+  },
+  {
+    "Precinct": 104,
+    "Borough": "Queens",
+    "Desc": "104 Queens - 64-02 Catalpa Avenue"
+  },
+  {
+    "Precinct": 90,
+    "Borough": "Brooklyn",
+    "Desc": "90 Brooklyn - 211 Union Avenue"
+  },
+  {
+    "Precinct": 103,
+    "Borough": "Queens",
+    "Desc": "103 Queens - 168-02 91 Avenue"
+  },
+  {
+    "Precinct": 5,
+    "Borough": "Manhattan",
+    "Desc": "5 Manhattan - 19 Elizabeth Street"
+  },
+  {
+    "Precinct": 7,
+    "Borough": "Manhattan",
+    "Desc": "7 Manhattan - 19 Pitt Street"
+  },
+  {
+    "Precinct": 1,
+    "Borough": "Manhattan",
+    "Desc": "1 Manhattan - 16 Ericsson Place"
+  },
+  {
+    "Precinct": 112,
+    "Borough": "Queens",
+    "Desc": "112 Queens - 68-40 Austin Street"
+  },
+  {
+    "Precinct": 9,
+    "Borough": "Manhattan",
+    "Desc": "9 Manhattan - 321 East 5 Street"
+  },
+  {
+    "Precinct": 105,
+    "Borough": "Queens",
+    "Desc": "105 Queens - 92-08-92-18 222 Street"
+  },
+  {
+    "Precinct": 94,
+    "Borough": "Brooklyn",
+    "Desc": "94 Brooklyn - 100 Meserole Avenue"
+  },
+  {
+    "Precinct": 107,
+    "Borough": "Queens",
+    "Desc": "107 Queens - 71-01 Parsons Boulevard"
+  },
+  {
+    "Precinct": 6,
+    "Borough": "Manhattan",
+    "Desc": "6 Manhattan - 233 West 10 Street"
+  },
+  {
+    "Precinct": 10,
+    "Borough": "Manhattan",
+    "Desc": "10 Manhattan - 230-232 West 20 Street"
+  },
+  {
+    "Precinct": 108,
+    "Borough": "Queens",
+    "Desc": "108 Queens - 5-47 50 Avenue"
+  },
+  {
+    "Precinct": 110,
+    "Borough": "Queens",
+    "Desc": "110 Queens - 94-41 43 Avenue"
+  },
+  {
+    "Precinct": 14,
+    "Borough": "Manhattan",
+    "Desc": "14 Manhattan - 357 West 35 Street"
+  },
+  {
+    "Precinct": 17,
+    "Borough": "Manhattan",
+    "Desc": "17 Manhattan - 167 East 51 Street"
+  },
+  {
+    "Precinct": 115,
+    "Borough": "Queens",
+    "Desc": "115 Queens - 92-15 Northern Boulevard"
+  },
+  {
+    "Precinct": 111,
+    "Borough": "Queens",
+    "Desc": "111 Queens - 45-06 215 Street"
+  },
+  {
+    "Precinct": 109,
+    "Borough": "Queens",
+    "Desc": "109 Queens - 37-05 Union Street"
+  },
+  {
+    "Precinct": 18,
+    "Borough": "Manhattan",
+    "Desc": "18 Manhattan - 306 West 54 Street"
+  },
+  {
+    "Precinct": 19,
+    "Borough": "Manhattan",
+    "Desc": "19 Manhattan - 153 East 67 Street"
+  },
+  {
+    "Precinct": 114,
+    "Borough": "Queens",
+    "Desc": "114 Queens - 34-16 Astoria Boulevard South"
+  },
+  {
+    "Precinct": 20,
+    "Borough": "Manhattan",
+    "Desc": "20 Manhattan - 120 West 82 Street"
+  },
+  {
+    "Precinct": 23,
+    "Borough": "Manhattan",
+    "Desc": "23 Manhattan - 164 East 102 Street"
+  },
+  {
+    "Precinct": 24,
+    "Borough": "Manhattan",
+    "Desc": "24 Manhattan - 151 West 100 Street"
+  },
+  {
+    "Precinct": 25,
+    "Borough": "Manhattan",
+    "Desc": "25 Manhattan - 120 East 119 Street"
+  },
+  {
+    "Precinct": 28,
+    "Borough": "Manhattan",
+    "Desc": "28 Manhattan - 2271-2289 8 Avenue"
+  },
+  {
+    "Precinct": 40,
+    "Borough": "Bronx",
+    "Desc": "40 Bronx - 257 Alexander Avenue"
+  },
+  {
+    "Precinct": 26,
+    "Borough": "Manhattan",
+    "Desc": "26 Manhattan - 520 West 126 Street"
+  },
+  {
+    "Precinct": 32,
+    "Borough": "Manhattan",
+    "Desc": "32 Manhattan - 250 West 135 Street"
+  },
+  {
+    "Precinct": 41,
+    "Borough": "Bronx",
+    "Desc": "41 Bronx - 1035 Longwood Avenue"
+  },
+  {
+    "Precinct": 42,
+    "Borough": "Bronx",
+    "Desc": "42 Bronx - 830 Washington Avenue"
+  },
+  {
+    "Precinct": 43,
+    "Borough": "Bronx",
+    "Desc": "43 Bronx - 900 Fteley Avenue"
+  },
+  {
+    "Precinct": 30,
+    "Borough": "Manhattan",
+    "Desc": "30 Manhattan - 451 West 151 Street"
+  },
+  {
+    "Precinct": 45,
+    "Borough": "Bronx",
+    "Desc": "45 Bronx - 2877 Barkley Avenue"
+  },
+  {
+    "Precinct": 44,
+    "Borough": "Bronx",
+    "Desc": "44 Bronx - 2 East 169 Street"
+  },
+  {
+    "Precinct": 33,
+    "Borough": "Manhattan",
+    "Desc": "33 Manhattan - 2207 Amsterdam Avenue"
+  },
+  {
+    "Precinct": 48,
+    "Borough": "Bronx",
+    "Desc": "48 Bronx - 450 Cross Bronx Expressway SR South"
+  },
+  {
+    "Precinct": 34,
+    "Borough": "Manhattan",
+    "Desc": "34 Manhattan - 4295 Broadway"
+  },
+  {
+    "Precinct": 46,
+    "Borough": "Bronx",
+    "Desc": "46 Bronx - 2120 Ryer Avenue"
+  },
+  {
+    "Precinct": 49,
+    "Borough": "Bronx",
+    "Desc": "49 Bronx - 2121 Eastchester Road"
+  },
+  {
+    "Precinct": 52,
+    "Borough": "Bronx",
+    "Desc": "52 Bronx - 3016 Webster Avenue"
+  },
+  {
+    "Precinct": 50,
+    "Borough": "Bronx",
+    "Desc": "50 Bronx - 3450 Kingsbridge Avenue"
+  },
+  {
+    "Precinct": 47,
+    "Borough": "Bronx",
+    "Desc": "47 Bronx - 4111 Laconia Avenue"
+  },
+  {
+    "Precinct": 13,
+    "Borough": "Manhattan",
+    "Desc": "13 Manhattan - 230 East 21 Street"
+  }
+]

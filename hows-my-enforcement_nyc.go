@@ -31,12 +31,22 @@ var content embed.FS
 //go:embed www/*
 var static embed.FS
 
+//go:embed precincts.json
+var precinctsJSON []byte
+
+type Precinct struct {
+	Precinct int
+	Borough  string
+	Desc     string
+}
+
 type App struct {
 	devMode   bool
 	firestore *firestore.Client
 	firebase  *auth.Client
 	storage   *storage.BucketHandle
 	nycAPI    nycapi.Client
+	precincts []Precinct
 
 	staticHandler http.Handler
 	templateFS    fs.FS
@@ -214,10 +224,13 @@ func (a *App) Report(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) Precinct(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	if s := r.Form.Get("precinct"); s == "" {
+
+	}
 
 	type Page struct {
-		Report      Report
-		SavePreview bool
+		Report Report
 	}
 	body := Page{}
 
@@ -286,6 +299,9 @@ func main() {
 		nycAPI: nycapi.Client{
 			SubscriptionKey: os.Getenv("OCP_APM_KEY"),
 		},
+	}
+	if err = json.Unmarshal(precinctsJSON, &app.precincts); err != nil {
+		log.Fatal(err)
 	}
 	if *devMode {
 		app.templateFS = os.DirFS(".")
