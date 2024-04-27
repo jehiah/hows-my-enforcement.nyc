@@ -13,7 +13,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -179,7 +178,12 @@ func (a *App) IndexPost(w http.ResponseWriter, r *http.Request) {
 	// http.Redirect(w, r, report.Link(), 302)
 }
 
-func (a *App) Report(w http.ResponseWriter, r *http.Request, id ReportID) {
+func (a *App) Report(w http.ResponseWriter, r *http.Request) {
+	id := ReportID(r.PathValue("report"))
+	if !IsValidReportID(id) {
+		http.NotFound(w, r)
+		return
+	}
 	t := newTemplate(a.templateFS, "report.html")
 	ctx := r.Context()
 	report, err := a.GetReport(ctx, id)
@@ -189,7 +193,7 @@ func (a *App) Report(w http.ResponseWriter, r *http.Request, id ReportID) {
 		return
 	}
 	if report == nil {
-		http.Error(w, "Not Found", 404)
+		http.NotFound(w, r)
 		return
 	}
 
@@ -253,55 +257,6 @@ func (app *App) User(*http.Request) account.UID {
 	return account.UID("test")
 }
 
-func (app App) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case "GET":
-		switch r.URL.Path {
-		case "/":
-			app.Index(w, r)
-			return
-		case "/precinct":
-			app.Precinct(w, r)
-			return
-		case "/summons":
-			app.Summons(w, r)
-			return
-		case "/311":
-			app.Lookup311(w, r)
-			return
-		case "/robots.txt":
-			app.RobotsTXT(w, r)
-			return
-		}
-		if strings.HasPrefix(r.URL.Path, "/static/") {
-			app.staticHandler.ServeHTTP(w, r)
-			return
-		}
-		if p := ReportID(strings.TrimPrefix(r.URL.Path, "/")); IsValidReportID(p) {
-			app.Report(w, r, p)
-			return
-		}
-	case "POST":
-		switch r.URL.Path {
-		case "/":
-			app.IndexPost(w, r)
-			return
-		case "/data/311":
-			app.Lookup311Post(w, r)
-			return
-		}
-	case "PUT":
-		if p := ReportID(strings.TrimPrefix(r.URL.Path, "/")); IsValidReportID(p) {
-			app.SaveReportPreview(w, r, p)
-			return
-		}
-	default:
-		http.Error(w, "Invalid Method", http.StatusMethodNotAllowed)
-		return
-	}
-	http.NotFound(w, r)
-}
-
 // tsFmt is used to match logrus timestamp format
 // w/ our stdlib log fmt (Ldate | Ltime)
 const tsFmt = "2006/01/02 15:04:05"
@@ -343,13 +298,29 @@ func main() {
 		app.staticHandler = http.StripPrefix("/static/", http.FileServer(http.FS(d)))
 	}
 
+	router := http.NewServeMux()
+
+	router.HandleFunc("GET /{$}", app.Index)
+	router.HandleFunc("GET /precinct{$}", app.Precinct)
+	router.HandleFunc("GET /summons{$}", app.Summons)
+	router.HandleFunc("GET /311{$}", app.Lookup311)
+	router.HandleFunc("GET /robots.txt{$}", app.RobotsTXT)
+	router.HandleFunc("GET /robots.txt{$}", app.RobotsTXT)
+	router.HandleFunc("POST /{$}", app.IndexPost)
+	router.HandleFunc("POST /data/311{$}", app.Lookup311Post)
+
+	reportRouter := http.NewServeMux()
+	reportRouter.HandleFunc("GET /{report}", app.Report)
+	reportRouter.HandleFunc("PUT /{report}", app.SaveReportPreview)
+	router.Handle("/", reportRouter)
+
 	// Determine port for HTTP service.
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8083"
 	}
 
-	var h http.Handler = app
+	var h http.Handler = router
 	if *logRequests {
 		h = handlers.LoggingHandler(os.Stdout, h)
 	}

@@ -9,7 +9,12 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func (a *App) SaveReportPreview(w http.ResponseWriter, r *http.Request, id ReportID) {
+func (a *App) SaveReportPreview(w http.ResponseWriter, r *http.Request) {
+	id := ReportID(r.PathValue("report"))
+	if !IsValidReportID(id) {
+		http.NotFound(w, r)
+		return
+	}
 	ctx := r.Context()
 	report, err := a.GetReport(ctx, id)
 	if err != nil {
