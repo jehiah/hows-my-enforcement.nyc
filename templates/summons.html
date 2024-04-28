@@ -84,13 +84,39 @@
 
 
     <div class="row">
-       <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <span class="nav-link disabled">Search By:</span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link"  href="/">Street</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/precinct">Precinct</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/summons">Summons</a>
+            </li>
+        </ul>
+    
+
+        <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
 
         <h2>Summons Number</h2>
 
         <input type="text" id="number" value="{{.SummonsNumber}}">
 
+        <div class="row bg-light pt-3 rounded-bottom-3">
+            <div class="mb-2">
+                <button id="query-button" type="submit" class="btn btn-info">Search</button>
+            </div>
+        </div>
+        
+
         <div id="results" style="display: none;"><div class="spinner-border m-5"></div></div>
+
+        </div>
 
     </div>
 </div>
@@ -128,7 +154,7 @@ function fetchData(n) {
         const row = data[0]
 
         const table = document.createElement("table")
-        table.className = "table table-sm table-xsm table-striped mb-2 p-2"
+        table.className = "table table-sm table-xsm table-striped my-4 p-2"
         const tbody = table.appendChild(document.createElement("tbody"))
 
         let tr = tbody.appendChild(document.createElement("tr"))
@@ -175,7 +201,7 @@ function fetchData(n) {
         tr.appendChild(document.createElement("th"))
         const a = tr.appendChild(document.createElement("td")).appendChild(document.createElement('a'))
         a.href = row.summons_image.url
-        a.innerText = "View Summons"
+        a.innerText = "🎫 View Summons"
 
         el.appendChild(table)
     })
@@ -189,16 +215,16 @@ document.getElementById("number").addEventListener("change", (e) => {
         return
     }
     document.getElementById("results").style.display = ""
-    fetchdata(n)
+    fetchData(n)
 })
 
 const q = new URLSearchParams(window.location.search);
 const SummonsNumber = q.get('number');
 if (SummonsNumber) {
-    console.log("SummonsNumber", SummonsNumber )
+    // console.log("SummonsNumber", SummonsNumber )
     document.getElementById("number").value = SummonsNumber
     document.getElementById("results").style.display = ""
-    fetchdata(SummonsNumber)
+    fetchData(SummonsNumber)
 }
 
 

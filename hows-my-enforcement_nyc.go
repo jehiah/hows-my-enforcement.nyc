@@ -11,8 +11,11 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -34,10 +37,15 @@ var static embed.FS
 //go:embed precincts.json
 var precinctsJSON []byte
 
+//go:embed precinct_data.json
+var preinctViolations []byte
+
 type Precinct struct {
-	Precinct int
-	Borough  string
-	Desc     string
+	Precinct          int
+	Borough           string
+	Desc              string
+	Violations        int
+	PercentViolations float64
 }
 
 type App struct {
@@ -50,6 +58,47 @@ type App struct {
 
 	staticHandler http.Handler
 	templateFS    fs.FS
+}
+
+func (a *App) LoadPrecincts() error {
+	var err error
+	if err = json.Unmarshal(precinctsJSON, &a.precincts); err != nil {
+		return err
+	}
+	type Value struct {
+		Precinct   int `json:"violation_precinct"`
+		Violations int `json:"number_violations"`
+	}
+	var res []Value
+	err = json.Unmarshal(preinctViolations, &res)
+	if err != nil {
+		return err
+	}
+	lookup := make(map[int]int, len(a.precincts))
+	for i, p := range a.precincts {
+		lookup[p.Precinct] = i
+	}
+	var max int
+	for _, r := range res {
+		if idx, ok := lookup[r.Precinct]; ok {
+			a.precincts[idx].Violations = r.Violations
+			if r.Violations > max {
+				max = r.Violations
+			}
+		}
+	}
+	if max > 0 {
+		for i, p := range a.precincts {
+			a.precincts[i].PercentViolations = (float64(p.Violations) / float64(max)) * 100
+		}
+	}
+
+	sort.Slice(a.precincts, func(i, j int) bool {
+		return a.precincts[i].Precinct < a.precincts[j].Precinct
+	})
+
+	return nil
+
 }
 
 func newTemplate(fs fs.FS, n string) *template.Template {
@@ -223,14 +272,33 @@ func (a *App) Report(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (a *App) Precincts(w http.ResponseWriter, r *http.Request) {
+	type Page struct {
+		Report    Report
+		Precincts []Precinct
+	}
+	body := Page{
+		Precincts: a.precincts,
+	}
+
+	t := newTemplate(a.templateFS, "precincts.html")
+	err := t.ExecuteTemplate(w, "precincts.html", body)
+	if err != nil {
+		log.Print(err)
+		a.WebInternalError500(w, "")
+	}
+}
+
 func (a *App) Precinct(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 	if s := r.Form.Get("precinct"); s == "" {
-
+		a.Precincts(w, r)
+		return
 	}
 
 	type Page struct {
-		Report Report
+		Report      Report
+		SavePreview bool
 	}
 	body := Page{}
 
@@ -250,12 +318,15 @@ func (a *App) Summons(w http.ResponseWriter, r *http.Request) {
 	body := Page{}
 	r.ParseForm()
 	var err error
-	body.SummonsNumber, err = strconv.ParseInt(r.Form.Get("number"), 10, 64)
-	// nypd summonses are ~~ 1493972194
-	// nypd traffic summonses are ~~ 9031199333
-	if err != nil || body.SummonsNumber < 1000000000 || body.SummonsNumber > 10000000000 {
-		a.WebBadRequestError400(w, "")
-		return
+	if s := r.Form.Get("number"); s != "" {
+		body.SummonsNumber, err = strconv.ParseInt(s, 10, 64)
+		// nypd summonses are ~~ 1493972194
+		// nypd traffic summonses are ~~ 9031199333
+		if err != nil || body.SummonsNumber < 1000000000 || body.SummonsNumber > 10000000000 {
+			log.Printf("err %s", err)
+			a.WebBadRequestError400(w, "")
+			return
+		}
 	}
 
 	t := newTemplate(a.templateFS, "summons.html")
@@ -300,7 +371,7 @@ func main() {
 			SubscriptionKey: os.Getenv("OCP_APM_KEY"),
 		},
 	}
-	if err = json.Unmarshal(precinctsJSON, &app.precincts); err != nil {
+	if err = app.LoadPrecincts(); err != nil {
 		log.Fatal(err)
 	}
 	if *devMode {
@@ -317,13 +388,13 @@ func main() {
 	router := http.NewServeMux()
 
 	router.HandleFunc("GET /{$}", app.Index)
-	router.HandleFunc("GET /precinct{$}", app.Precinct)
-	router.HandleFunc("GET /summons{$}", app.Summons)
-	router.HandleFunc("GET /311{$}", app.Lookup311)
-	router.HandleFunc("GET /robots.txt{$}", app.RobotsTXT)
-	router.HandleFunc("GET /robots.txt{$}", app.RobotsTXT)
+	router.HandleFunc("GET /precinct", app.Precinct)
+	router.HandleFunc("GET /summons", app.Summons)
+	router.HandleFunc("GET /311", app.Lookup311)
+	router.HandleFunc("GET /robots.txt", app.RobotsTXT)
 	router.HandleFunc("POST /{$}", app.IndexPost)
-	router.HandleFunc("POST /data/311{$}", app.Lookup311Post)
+	router.HandleFunc("POST /data/311", app.Lookup311Post)
+	router.HandleFunc("GET /static/", app.staticHandler.ServeHTTP)
 
 	reportRouter := http.NewServeMux()
 	reportRouter.HandleFunc("GET /{report}", app.Report)
@@ -333,7 +404,11 @@ func main() {
 	// Determine port for HTTP service.
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8083"
+		if *devMode {
+			port = "443"
+		} else {
+			port = "8083"
+		}
 	}
 
 	var h http.Handler = router
@@ -341,9 +416,28 @@ func main() {
 		h = handlers.LoggingHandler(os.Stdout, h)
 	}
 
-	// Start HTTP server.
-	log.Printf("listening on port %s", port)
-	if err := http.ListenAndServe(":"+port, h); err != nil {
-		log.Fatal(err)
+	if *devMode {
+		// mkcert -key-file dev/key.pem -cert-file dev/cert.pem dev.hows-my-enforcement.nyc
+		if _, err := os.Stat("dev/cert.pem"); os.IsNotExist(err) {
+			log.Printf("dev/cert.pem missing.")
+			os.Mkdir("dev", 0750)
+			cmd := exec.Command("mkcert", "-install", "-key-file=dev/key.pem", "-cert-file=dev/cert.pem", "dev.hows-my-enforcement.nyc")
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			log.Printf("%s %s", cmd.Path, strings.Join(cmd.Args[1:], " "))
+			err := cmd.Run()
+			if err != nil {
+				log.Fatal(err)
+			}
+		}
+		log.Printf("listening to HTTPS on port %s https://dev.hows-my-enforcement.nyc", port)
+		if err := http.ListenAndServeTLS(":"+port, "dev/cert.pem", "dev/key.pem", h); err != nil {
+			log.Fatal(err)
+		}
+	} else {
+		log.Printf("listening on port %s", port)
+		if err := http.ListenAndServe(":"+port, h); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
