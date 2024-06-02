@@ -336,7 +336,7 @@ function queryNYCOpenData() {
 
     switch (borough) {
         case "Brooklyn":
-            filters.push(`(violation_county in ('BK', 'K', 'Kings) or violation_county is null)`)
+            filters.push(`(violation_county in ('BK', 'K', 'Kings') or violation_county is null)`)
             displayFilters.push(`violation_county in ('BK', 'K', 'Kings') // Brooklyn`)
             break;
         case "Manhattan":
