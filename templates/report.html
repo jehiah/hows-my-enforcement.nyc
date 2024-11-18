@@ -304,7 +304,7 @@ function queryNYCOpenData() {
 
     let filters = [];
     dayjs.extend(dayjs_plugin_utc)
-    let end = issuingAgency == "any" ? FY.end.P :FY.end[issuingAgency]
+    let end = FY.end[issuingAgency == "all" ? "P" : issuingAgency]
     let startDate = dayjs(end).utcOffset(0).date(1).subtract(11, 'month').toDate()
     const dateFormat = d3.utcFormat("%Y-%m-%d")
     let displayFilters = [
