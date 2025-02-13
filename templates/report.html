@@ -121,9 +121,9 @@
         "dataset":"pvqr-7yc4", 
         "start": parseDate("2023-07-01"),
         "end": {
-            "P":parseDate("2024-11-14"),
-            "T":parseDate("2024-11-26"),
-            "S":parseDate("2024-11-27")
+            "P":parseDate("2024-12-03"),
+            "T":parseDate("2024-12-26"),
+            "S":parseDate("2024-12-30")
         }
       },
       "FY2023": {
@@ -267,7 +267,7 @@ const dtFormat = new Intl.DateTimeFormat("en-US");
 function getData(query) {
     return Promise.all([
     fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number,violation_county,violation_precinct&$limit=100000"+query),
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number,violation_county,violation_precinct&$limit=100000"+query)
+//    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number,violation_county,violation_precinct&$limit=100000"+query)
     ]).then(results => Promise.all(results.map(r => r.text())))
     .then(results => {
         const d1 = d3.csvParse(results[0])
