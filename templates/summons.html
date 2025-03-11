@@ -134,10 +134,11 @@
 
 
 <script type="module">
+const dateFormat = d3.utcFormat("%Y-%m-%d")
 
 function fetchData(n) {
     const Resource = "nc67-uf89" // https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89
-    fetch("https://data.cityofnewyork.us/resource/"+Resource + ".json?$where=summons_number=" + encodeURIComponent(n))
+    fetch("https://data.cityofnewyork.us/resource/"+Resource + ".json?$select=:*,%20*&$where=summons_number=" + encodeURIComponent(n))
     .then((response) => response.json())
     .then((data) => {
         const el = document.getElementById("results")
@@ -169,6 +170,9 @@ function fetchData(n) {
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Violation"
         tr.appendChild(document.createElement("td")).innerText = row.violation
+        tr = tbody.appendChild(document.createElement("tr"))
+        tr.appendChild(document.createElement("th")).innerText = "Status"
+        tr.appendChild(document.createElement("td")).innerText = row.violation_status
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Fine"
         tr.appendChild(document.createElement("td")).innerText = "$" + row.fine_amount
@@ -203,7 +207,28 @@ function fetchData(n) {
         a.href = row.summons_image.url
         a.innerText = "🎫 View Summons"
 
+        const caption = table.appendChild(document.createElement("caption"))
+        caption.innerText = "Data as of " + dateFormat(new Date(row[":updated_at"]))
+
         el.appendChild(table)
+
+        // now check the fiscal year dataset for the same summons number
+        // fetch("https://data.cityofnewyork.us/resource/pvqr-7yc4.json?summons_number=" + encodeURIComponent(n))
+        // .then((response) => response.json())
+        // .then((data) => {
+        //     console.log("data", data)
+        //     if (data.length == 0) {
+        //         return
+        //     }
+        //     const row = data[0]
+        //     console.log("data", row)
+
+        //     // tr = tbody.appendChild(document.createElement("tr"))
+        //     // tr.appendChild(document.createElement("th")).innerText = "= Amount Due"
+        //     // tr.appendChild(document.createElement("td")).innerText = "$" + row.amount_due
+        // })
+
+
     })
 }
 
