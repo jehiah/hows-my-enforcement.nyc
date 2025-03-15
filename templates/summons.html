@@ -105,14 +105,10 @@
 
         <h2>Summons Number</h2>
 
-        <input type="text" id="number" value="{{.SummonsNumber}}">
-
-        <div class="row bg-light pt-3 rounded-bottom-3">
-            <div class="mb-2">
-                <button id="query-button" type="submit" class="btn btn-info">Search</button>
-            </div>
+        <div class="input-group mb-3">
+            <input type="text"  class="form-control" id="number" value="{{if .SummonsNumber}}{{.SummonsNumber}}{{end}}" style="max-width:175px;" placeholder="Summons Number">
+            <button id="query-button" type="submit" class="btn btn-info">Search</button>
         </div>
-        
 
         <div id="results" style="display: none;"><div class="spinner-border m-5"></div></div>
 
@@ -161,6 +157,11 @@ function fetchData(n) {
         let tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Issuing Agency"
         tr.appendChild(document.createElement("td")).innerText = row.issuing_agency
+        if (row.precinct) {
+            tr = tbody.appendChild(document.createElement("tr"))
+            tr.appendChild(document.createElement("th")).innerText = "Precinct"
+            tr.appendChild(document.createElement("td")).innerText = row.precinct
+        }
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Issue Date"
         tr.appendChild(document.createElement("td")).innerText = row.issue_date + " " + row.violation_time
@@ -172,7 +173,7 @@ function fetchData(n) {
         tr.appendChild(document.createElement("td")).innerText = row.violation
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Status"
-        tr.appendChild(document.createElement("td")).innerText = row.violation_status
+        tr.appendChild(document.createElement("td")).innerText = row.violation_status ? row.violation_status : "UNKNOWN (no status recorded)"
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Fine"
         tr.appendChild(document.createElement("td")).innerText = "$" + row.fine_amount
@@ -208,7 +209,7 @@ function fetchData(n) {
         a.innerText = "🎫 View Summons"
 
         const caption = table.appendChild(document.createElement("caption"))
-        caption.innerText = "Data as of " + dateFormat(new Date(row[":updated_at"]))
+        caption.innerText = "Data updated on " + dateFormat(new Date(row[":updated_at"]))
 
         el.appendChild(table)
 
