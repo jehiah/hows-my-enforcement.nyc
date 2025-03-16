@@ -136,6 +136,30 @@
 const dateFormat = d3.utcFormat("%Y-%m-%d")
 const parseYMDDate = d3.utcParse("%Y%m%d")
 
+const violationLookup = {
+    "NO STANDING-OFF-STREET LOT": "MTA CAMERA DOUBLE PARKING",
+    "EXPIRED METER-COMM METER ZONE": "MTA CAMERA BUS STOP",
+    "BLUE ZONE": "WEIGH IN MOTION VIOLATION",
+    "NO STANDING-SNOW EMERGENCY": "MOBILE BUS LANE VIOLATION"
+}
+
+const countyLookup = {
+    "BX": "Bronx",
+    "Bronx": "Bronx",
+    "K": "Brooklyn",
+    "Kings": "Brooklyn",
+    "BK": "Brooklyn",
+    "NY": "Manhattan",
+    "MN": "Manhattan",
+    "QN": "Queens",
+    "Q": "Queens",
+    "Qns": "Queens",
+    "SI": "Staten Island",
+    "R": "Staten Island",
+    "Rich": "Staten Island",
+    "ST": "Staten Island"
+}
+
 function fetchData(n) {
     const Resource = "nc67-uf89" // https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89
     fetch("https://data.cityofnewyork.us/resource/"+Resource + ".json?$select=:*,%20*&$where=summons_number=" + encodeURIComponent(n))
@@ -155,6 +179,12 @@ function fetchData(n) {
 
         const row = data[0]
         console.log("Open Parking and Camera Violations", row)
+        if (row.precinct == "000") {
+            row.precinct = ""
+        }
+        if (countyLookup[row.county]) {
+            row.county = countyLookup[row.county]
+        }
         const openDataRow = row
 
         const table = document.createElement("table")
@@ -166,6 +196,7 @@ function fetchData(n) {
         let issuingAgency = tr.appendChild(document.createElement("td"))
         issuingAgency.innerText = row.issuing_agency
         let hasAgencyDetail = false
+
         if (row.precinct) {
             hasAgencyDetail = true
             issuingAgency.appendChild(document.createElement("br"))
@@ -185,9 +216,14 @@ function fetchData(n) {
         licenseDetail.innerText = `Type: ${row.license_type}`
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Violation"
-        tr.appendChild(document.createElement("td")).innerText = row.violation
+        tr.appendChild(document.createElement("td")).innerText = violationLookup[row.violation] ? violationLookup[row.violation] : row.violation
+
         tr = tbody.appendChild(document.createElement("tr"))
-        const statusTr = tr
+        tr.appendChild(document.createElement("th")).innerText = "Location"
+        let locationTd = tr.appendChild(document.createElement("td"))
+        locationTd.innerText = `County: ${row.county}`
+
+        tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Status"
         tr.appendChild(document.createElement("td")).innerText = row.violation_status ? row.violation_status : "UNKNOWN (no status recorded)"
         tr = tbody.appendChild(document.createElement("tr"))
@@ -281,9 +317,6 @@ function fetchData(n) {
                 issuingAgency.appendChild(document.createElement("span")).innerText = `Squad: ${row.issuer_squad} `
             }
 
-            tr = document.createElement("tr")
-            tbody.insertBefore(tr, statusTr)
-            tr.appendChild(document.createElement("th")).innerText = "Location"
             let txt = ""
             if (row.violation_in_front_of_or_opposite == 'F') {
                 txt = "Front of "
@@ -299,7 +332,10 @@ function fetchData(n) {
             if (row.intersecting_street) {
                 txt += ` ${row.intersecting_street}`
             }
-            tr.appendChild(document.createElement("td")).innerText = txt
+            if (row.violation_county) {
+                txt += ` ${countyLookup[row.violation_county]}`
+            }
+            locationTd.innerText = txt
         })
 
 
