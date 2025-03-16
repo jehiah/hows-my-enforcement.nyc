@@ -1,6 +1,9 @@
 module github.com/jehiah/hows-my-enforcement.nyc
 
-go 1.23
+go 1.23.0
+
+toolchain go1.24.1
+
 require (
 	cloud.google.com/go/bigquery v1.65.0
 	cloud.google.com/go/firestore v1.18.0

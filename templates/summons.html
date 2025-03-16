@@ -68,6 +68,9 @@
     rect.cell.highlighted {
         stroke: #000;
     }
+    .license {
+        font-weight:600;
+    }
 </style>
 </head>
 <body>
@@ -131,6 +134,7 @@
 
 <script type="module">
 const dateFormat = d3.utcFormat("%Y-%m-%d")
+const parseYMDDate = d3.utcParse("%Y%m%d")
 
 function fetchData(n) {
     const Resource = "nc67-uf89" // https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89
@@ -144,11 +148,14 @@ function fetchData(n) {
             return
         }
 
+
         var qs = new URLSearchParams()
         qs.set("number", n)
         history.pushState(null, document.title, window.location.pathname + "?" + qs.toString())
 
         const row = data[0]
+        console.log("Open Parking and Camera Violations", row)
+        const openDataRow = row
 
         const table = document.createElement("table")
         table.className = "table table-sm table-xsm table-striped my-4 p-2"
@@ -156,22 +163,31 @@ function fetchData(n) {
 
         let tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Issuing Agency"
-        tr.appendChild(document.createElement("td")).innerText = row.issuing_agency
+        let issuingAgency = tr.appendChild(document.createElement("td"))
+        issuingAgency.innerText = row.issuing_agency
+        let hasAgencyDetail = false
         if (row.precinct) {
-            tr = tbody.appendChild(document.createElement("tr"))
-            tr.appendChild(document.createElement("th")).innerText = "Precinct"
-            tr.appendChild(document.createElement("td")).innerText = row.precinct
+            hasAgencyDetail = true
+            issuingAgency.appendChild(document.createElement("br"))
+            issuingAgency.appendChild(document.createElement("span")).innerText = `Precinct: ${row.precinct} `
         }
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Issue Date"
         tr.appendChild(document.createElement("td")).innerText = row.issue_date + " " + row.violation_time
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Vehicle"
-        tr.appendChild(document.createElement("td")).innerText = `(${row.license_type}) ${row.state}:${row.plate}`
+        let td = tr.appendChild(document.createElement("td"))
+        let plate = td.appendChild(document.createElement("span"))
+        plate.innerText = `${row.state}:${row.plate}`
+        plate.className = "license"
+        td.appendChild(document.createElement("br"))
+        const licenseDetail = td.appendChild(document.createElement("span"))
+        licenseDetail.innerText = `Type: ${row.license_type}`
         tr = tbody.appendChild(document.createElement("tr"))
         tr.appendChild(document.createElement("th")).innerText = "Violation"
         tr.appendChild(document.createElement("td")).innerText = row.violation
         tr = tbody.appendChild(document.createElement("tr"))
+        const statusTr = tr
         tr.appendChild(document.createElement("th")).innerText = "Status"
         tr.appendChild(document.createElement("td")).innerText = row.violation_status ? row.violation_status : "UNKNOWN (no status recorded)"
         tr = tbody.appendChild(document.createElement("tr"))
@@ -214,20 +230,77 @@ function fetchData(n) {
         el.appendChild(table)
 
         // now check the fiscal year dataset for the same summons number
-        // fetch("https://data.cityofnewyork.us/resource/pvqr-7yc4.json?summons_number=" + encodeURIComponent(n))
-        // .then((response) => response.json())
-        // .then((data) => {
-        //     console.log("data", data)
-        //     if (data.length == 0) {
-        //         return
-        //     }
-        //     const row = data[0]
-        //     console.log("data", row)
+        fetch("https://data.cityofnewyork.us/resource/pvqr-7yc4.json?summons_number=" + encodeURIComponent(n))
+        .then((response) => response.json())
+        .then((data) => {
+            // console.log("data", data)
+            if (data.length == 0) {
+                return
+            }
+            const row = data[0]
+            console.log("FY Data", row)
 
-        //     // tr = tbody.appendChild(document.createElement("tr"))
-        //     // tr.appendChild(document.createElement("th")).innerText = "= Amount Due"
-        //     // tr.appendChild(document.createElement("td")).innerText = "$" + row.amount_due
-        // })
+            if (row.vehicle_make) {
+                licenseDetail.innerText += ` Make: ${row.vehicle_make}`
+            }
+            if (row.vehicle_model) {
+                licenseDetail.innerText += ` Model: ${row.vehicle_model}`
+            }
+            if (row.vehicle_color) {
+                licenseDetail.innerText += ` Color: ${row.vehicle_color}`
+            }
+            if (row.vehicle_body_type) {
+                licenseDetail.innerText += ` Body: ${row.vehicle_body_type}`
+            }
+            if (row.vehicle_year) {
+                licenseDetail.innerText += ` Year: ${row.vehicle_year}`
+            }
+            if (row.vehicle_expiration_date) {
+                licenseDetail.innerText += ` Registration Expires: ${dateFormat(parseYMDDate(row.vehicle_expiration_date))}`
+            }
+
+            if (row.issuer_precinct && ! openDataRow.precinct) {
+                if (!hasAgencyDetail) {
+                    hasAgencyDetail = true
+                    issuingAgency.appendChild(document.createElement("br"))
+                }
+                issuingAgency.appendChild(document.createElement("span")).innerText = `Precinct: ${row.issuer_precinct} `
+            }
+            if (row.issuer_command) {
+                if (!hasAgencyDetail) {
+                    hasAgencyDetail = true
+                    issuingAgency.appendChild(document.createElement("br"))
+                }
+                issuingAgency.appendChild(document.createElement("span")).innerText = `Command: ${row.issuer_command} `
+            }
+            if (row.issuer_squad) {
+                if (!hasAgencyDetail) {
+                    hasAgencyDetail = true
+                    issuingAgency.appendChild(document.createElement("br"))
+                }
+                issuingAgency.appendChild(document.createElement("span")).innerText = `Squad: ${row.issuer_squad} `
+            }
+
+            tr = document.createElement("tr")
+            tbody.insertBefore(tr, statusTr)
+            tr.appendChild(document.createElement("th")).innerText = "Location"
+            let txt = ""
+            if (row.violation_in_front_of_or_opposite == 'F') {
+                txt = "Front of "
+            } else if (row.violation_in_front_of_or_opposite == 'O') {
+                txt = "Opposite of "
+            }
+            if (row.house_number) {
+                txt += `${row.house_number}`
+            }
+            if (row.street_name) {
+                txt += ` ${row.street_name}`
+            }
+            if (row.intersecting_street) {
+                txt += ` ${row.intersecting_street}`
+            }
+            tr.appendChild(document.createElement("td")).innerText = txt
+        })
 
 
     })
