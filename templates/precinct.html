@@ -122,7 +122,10 @@
 <div class="row">
     <footer>
         <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
-        <p>Data from <a href="https://data.cityofnewyork.us/City-Government/Parking-Violations-Issued-Fiscal-Year-2024/pvqr-7yc4">NYC Open Data</a></p>
+        <p>Data from NYC Open Data:
+            <a href="https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89/about_data">Open Parking and Camera Violations</a>
+            <a href="https://data.cityofnewyork.us/browse?Data-Collection_Data-Collection=DOF+Parking+Violations+Issued&q=&sortBy=alpha&utf8=%E2%9C%93&page=1&pageSize=20">Parking Violations Issued by Fiscal Year</a>.
+        </p>
     </footer>
 </div>
 
@@ -142,9 +145,9 @@
         "dataset":"pvqr-7yc4", 
         "start": parseDate("2023-07-01"),
         "end": {
-            "P":parseDate("2025-01-12"),
-            "T":parseDate("2025-01-28"),
-            "S":parseDate("2025-01-30")
+            "P":parseDate("2025-02-16"),
+            "T":parseDate("2025-02-25"),
+            "S":parseDate("2025-02-27")
         }
       },
       "FY2023": {
@@ -177,10 +180,10 @@
         "9":"OBSTRUCTING TRAFFIC/INTERSECT",
         "10":"NO STOPPING-DAY/TIME LIMITS",
         "11":"NO STANDING-HOTEL LOADING",
-        "12":"MOBILE BUS LANE VIOLATION",
+        "12":"MOBILE BUS LANE VIOLATION", // "NO STANDING-SNOW EMERGENCY"
         "13":"NO STANDING-TAXI STAND",
         "14":"NO STANDING-DAY/TIME LIMITS",
-        "15":"NO STANDING-OFF-STREET LOT",
+        "15":"MTA CAMERA DOUBLE PARKING", // "NO STANDING-OFF-STREET LOT",
         "16":"NO STANDING-EXC. TRUCK LOADING",
         "17":"NO STANDING-EXC. AUTH. VEHICLE",
         "18":"NO STANDING-BUS LANE",
@@ -208,7 +211,7 @@
         "40":"FIRE HYDRANT",
         "41":"MISCELLANEOUS",
         "42":"EXPIRED MUNI MTR-COMM MTR ZN",
-        "43":"EXPIRED METER-COMM METER ZONE",
+        "43":"MTA CAMERA BUS STOP", // "EXPIRED METER-COMM METER ZONE",
         "44":"PKG IN EXC. OF LIM-COMM MTR ZN",
         "45":"TRAFFIC LANE",
         "46":"DOUBLE PARKING",
@@ -222,7 +225,7 @@
         "54":"PCKP DSCHRGE IN PRHBTD ZONE",
         "55":"ELEVATED/DIVIDED HIGHWAY/TUNNL",
         "56":"DIVIDED HIGHWAY",
-        "57":"BLUE ZONE",
+        "57":"WEIGH IN MOTION VIOLATION", // "BLUE ZONE",
         "58":"MARGINAL STREET/WATER FRONT",
         "59":"ANGLE PARKING-COMM VEHICLE",
         "60":"ANGLE PARKING",
