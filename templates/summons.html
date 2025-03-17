@@ -165,7 +165,8 @@ const countyLookup = {
 
 function fetchData(n) {
     const Resource = "nc67-uf89" // https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89
-    fetch("https://data.cityofnewyork.us/resource/"+Resource + ".json?$select=:*,%20*&$where=summons_number=" + encodeURIComponent(n))
+    const openDataSourceURL = "https://data.cityofnewyork.us/resource/"+Resource + ".json?$select=:*,%20*&$where=summons_number=" + encodeURIComponent(n)
+    fetch(openDataSourceURL)
     .then((response) => response.json())
     .then((data) => {
         const el = document.getElementById("results")
@@ -265,11 +266,21 @@ function fetchData(n) {
 
         const caption = table.appendChild(document.createElement("caption"))
         caption.innerText = "Data updated on " + dateFormat(new Date(row[":updated_at"]))
+        caption.appendChild(document.createElement('br'))
+        let openDataDownload = caption.appendChild(document.createElement('a'))
+        openDataDownload.href = openDataSourceURL
+        openDataDownload.innerText = "🗄️ Open Parking and Camera Violations (JSON)"
+
+        const fyDataURL = "https://data.cityofnewyork.us/resource/pvqr-7yc4.json?summons_number=" + encodeURIComponent(n)
+        caption.appendChild(document.createElement('br'))
+        openDataDownload = caption.appendChild(document.createElement('a'))
+        openDataDownload.href = fyDataURL
+        openDataDownload.innerText = "🗄️ FY 2024-2025 Data (JSON)"
 
         el.appendChild(table)
 
         // now check the fiscal year dataset for the same summons number
-        fetch("https://data.cityofnewyork.us/resource/pvqr-7yc4.json?summons_number=" + encodeURIComponent(n))
+        fetch(fyDataURL)
         .then((response) => response.json())
         .then((data) => {
             // console.log("data", data)
