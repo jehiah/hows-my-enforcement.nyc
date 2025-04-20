@@ -121,6 +121,7 @@ func (a *App) RobotsTXT(w http.ResponseWriter, r *http.Request) {
 
 User-agent: *
 Disallow: /summons
+Disallow: /vehicle
 `)
 
 }
@@ -337,6 +338,28 @@ func (a *App) Summons(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (a *App) Vehicle(w http.ResponseWriter, r *http.Request) {
+	type Page struct {
+		State   string
+		Vehicle string
+	}
+	body := Page{}
+	r.ParseForm()
+
+	if s := r.Form.Get("vehicle"); s != "" {
+		state, vehicle, _ := strings.Cut(strings.ToUpper(strings.TrimSpace(s)), ":")
+		body.Vehicle = vehicle
+		body.State = state
+	}
+
+	t := newTemplate(a.templateFS, "vehicle.html")
+	err := t.ExecuteTemplate(w, "vehicle.html", body)
+	if err != nil {
+		log.Print(err)
+		a.WebInternalError500(w, "")
+	}
+}
+
 func (app *App) User(*http.Request) account.UID {
 	return account.UID("test")
 }
@@ -391,6 +414,7 @@ func main() {
 	router.HandleFunc("GET /precinct", app.Precinct)
 	router.HandleFunc("GET /summons", app.Summons)
 	router.HandleFunc("GET /311", app.Lookup311)
+	router.HandleFunc("GET /vehicle", app.Vehicle)
 	router.HandleFunc("GET /robots.txt", app.RobotsTXT)
 	router.HandleFunc("POST /{$}", app.IndexPost)
 	router.HandleFunc("POST /data/311", app.Lookup311Post)
