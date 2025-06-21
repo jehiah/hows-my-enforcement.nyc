@@ -1,35 +1,35 @@
 [
   {
     "violation_precinct": 0,
-    "number_violations": 3752
+    "number_violations": 3675
   },
   {
     "violation_precinct": 1,
-    "number_violations": 3204
+    "number_violations": 3142
   },
   {
     "violation_precinct": 2,
-    "number_violations": 28
+    "number_violations": 31
   },
   {
     "violation_precinct": 3,
-    "number_violations": 22
+    "number_violations": 19
   },
   {
     "violation_precinct": 4,
-    "number_violations": 38
+    "number_violations": 35
   },
   {
     "violation_precinct": 5,
-    "number_violations": 986
+    "number_violations": 991
   },
   {
     "violation_precinct": 6,
-    "number_violations": 538
+    "number_violations": 615
   },
   {
     "violation_precinct": 7,
-    "number_violations": 1646
+    "number_violations": 1701
   },
   {
     "violation_precinct": 8,
@@ -37,31 +37,31 @@
   },
   {
     "violation_precinct": 9,
-    "number_violations": 708
+    "number_violations": 705
   },
   {
     "violation_precinct": 10,
-    "number_violations": 1714
+    "number_violations": 1492
   },
   {
     "violation_precinct": 11,
-    "number_violations": 16
+    "number_violations": 14
   },
   {
     "violation_precinct": 12,
-    "number_violations": 22
+    "number_violations": 20
   },
   {
     "violation_precinct": 13,
-    "number_violations": 1285
+    "number_violations": 1317
   },
   {
     "violation_precinct": 14,
-    "number_violations": 1570
+    "number_violations": 1471
   },
   {
     "violation_precinct": 15,
-    "number_violations": 21
+    "number_violations": 18
   },
   {
     "violation_precinct": 16,
@@ -69,19 +69,19 @@
   },
   {
     "violation_precinct": 17,
-    "number_violations": 979
+    "number_violations": 1002
   },
   {
     "violation_precinct": 18,
-    "number_violations": 2868
+    "number_violations": 2805
   },
   {
     "violation_precinct": 19,
-    "number_violations": 1146
+    "number_violations": 1149
   },
   {
     "violation_precinct": 20,
-    "number_violations": 1376
+    "number_violations": 1308
   },
   {
     "violation_precinct": 21,
@@ -89,67 +89,67 @@
   },
   {
     "violation_precinct": 22,
-    "number_violations": 15
-  },
-  {
-    "violation_precinct": 23,
-    "number_violations": 1420
-  },
-  {
-    "violation_precinct": 24,
-    "number_violations": 1849
-  },
-  {
-    "violation_precinct": 25,
-    "number_violations": 3161
-  },
-  {
-    "violation_precinct": 26,
-    "number_violations": 1042
-  },
-  {
-    "violation_precinct": 27,
-    "number_violations": 8
-  },
-  {
-    "violation_precinct": 28,
-    "number_violations": 3715
-  },
-  {
-    "violation_precinct": 29,
-    "number_violations": 12
-  },
-  {
-    "violation_precinct": 30,
-    "number_violations": 2829
-  },
-  {
-    "violation_precinct": 31,
-    "number_violations": 12
-  },
-  {
-    "violation_precinct": 32,
-    "number_violations": 4124
-  },
-  {
-    "violation_precinct": 33,
-    "number_violations": 1939
-  },
-  {
-    "violation_precinct": 34,
-    "number_violations": 5731
-  },
-  {
-    "violation_precinct": 35,
     "number_violations": 13
   },
   {
+    "violation_precinct": 23,
+    "number_violations": 1334
+  },
+  {
+    "violation_precinct": 24,
+    "number_violations": 1755
+  },
+  {
+    "violation_precinct": 25,
+    "number_violations": 2867
+  },
+  {
+    "violation_precinct": 26,
+    "number_violations": 1011
+  },
+  {
+    "violation_precinct": 27,
+    "number_violations": 7
+  },
+  {
+    "violation_precinct": 28,
+    "number_violations": 3661
+  },
+  {
+    "violation_precinct": 29,
+    "number_violations": 11
+  },
+  {
+    "violation_precinct": 30,
+    "number_violations": 2658
+  },
+  {
+    "violation_precinct": 31,
+    "number_violations": 13
+  },
+  {
+    "violation_precinct": 32,
+    "number_violations": 4234
+  },
+  {
+    "violation_precinct": 33,
+    "number_violations": 1841
+  },
+  {
+    "violation_precinct": 34,
+    "number_violations": 5561
+  },
+  {
+    "violation_precinct": 35,
+    "number_violations": 11
+  },
+  {
     "violation_precinct": 36,
-    "number_violations": 12
+    "number_violations": 9
   },
   {
     "violation_precinct": 37,
-    "number_violations": 7
+    "number_violations": 5
   },
   {
     "violation_precinct": 38,
@@ -157,67 +157,67 @@
   },
   {
     "violation_precinct": 39,
-    "number_violations": 19
-  },
-  {
-    "violation_precinct": 40,
-    "number_violations": 2995
-  },
-  {
-    "violation_precinct": 41,
-    "number_violations": 1747
-  },
-  {
-    "violation_precinct": 42,
-    "number_violations": 1581
-  },
-  {
-    "violation_precinct": 43,
-    "number_violations": 2697
-  },
-  {
-    "violation_precinct": 44,
-    "number_violations": 5645
-  },
-  {
-    "violation_precinct": 45,
-    "number_violations": 3008
-  },
-  {
-    "violation_precinct": 46,
-    "number_violations": 3880
-  },
-  {
-    "violation_precinct": 47,
-    "number_violations": 2660
-  },
-  {
-    "violation_precinct": 48,
-    "number_violations": 2365
-  },
-  {
-    "violation_precinct": 49,
-    "number_violations": 3608
-  },
-  {
-    "violation_precinct": 50,
-    "number_violations": 6277
-  },
-  {
-    "violation_precinct": 51,
-    "number_violations": 9
-  },
-  {
-    "violation_precinct": 52,
-    "number_violations": 4062
-  },
-  {
-    "violation_precinct": 53,
     "number_violations": 16
   },
   {
+    "violation_precinct": 40,
+    "number_violations": 3069
+  },
+  {
+    "violation_precinct": 41,
+    "number_violations": 1735
+  },
+  {
+    "violation_precinct": 42,
+    "number_violations": 1768
+  },
+  {
+    "violation_precinct": 43,
+    "number_violations": 2874
+  },
+  {
+    "violation_precinct": 44,
+    "number_violations": 5586
+  },
+  {
+    "violation_precinct": 45,
+    "number_violations": 2988
+  },
+  {
+    "violation_precinct": 46,
+    "number_violations": 3952
+  },
+  {
+    "violation_precinct": 47,
+    "number_violations": 2510
+  },
+  {
+    "violation_precinct": 48,
+    "number_violations": 2418
+  },
+  {
+    "violation_precinct": 49,
+    "number_violations": 3603
+  },
+  {
+    "violation_precinct": 50,
+    "number_violations": 6471
+  },
+  {
+    "violation_precinct": 51,
+    "number_violations": 8
+  },
+  {
+    "violation_precinct": 52,
+    "number_violations": 4371
+  },
+  {
+    "violation_precinct": 53,
+    "number_violations": 17
+  },
+  {
     "violation_precinct": 54,
-    "number_violations": 11
+    "number_violations": 9
   },
   {
     "violation_precinct": 55,
@@ -225,35 +225,35 @@
   },
   {
     "violation_precinct": 56,
-    "number_violations": 31
+    "number_violations": 25
   },
   {
     "violation_precinct": 57,
-    "number_violations": 5
+    "number_violations": 4
   },
   {
     "violation_precinct": 58,
-    "number_violations": 24
+    "number_violations": 22
   },
   {
     "violation_precinct": 60,
-    "number_violations": 3607
+    "number_violations": 3832
   },
   {
     "violation_precinct": 61,
-    "number_violations": 3492
+    "number_violations": 3252
   },
   {
     "violation_precinct": 62,
-    "number_violations": 6098
+    "number_violations": 5767
   },
   {
     "violation_precinct": 63,
-    "number_violations": 2433
+    "number_violations": 2438
   },
   {
     "violation_precinct": 64,
-    "number_violations": 27
+    "number_violations": 29
   },
   {
     "violation_precinct": 65,
@@ -261,79 +261,79 @@
   },
   {
     "violation_precinct": 66,
-    "number_violations": 4207
+    "number_violations": 4107
   },
   {
     "violation_precinct": 67,
-    "number_violations": 5051
+    "number_violations": 4963
   },
   {
     "violation_precinct": 68,
-    "number_violations": 5029
+    "number_violations": 5103
   },
   {
     "violation_precinct": 69,
-    "number_violations": 1967
+    "number_violations": 1925
   },
   {
     "violation_precinct": 70,
-    "number_violations": 3631
+    "number_violations": 3376
   },
   {
     "violation_precinct": 71,
-    "number_violations": 2168
+    "number_violations": 2116
   },
   {
     "violation_precinct": 72,
-    "number_violations": 3375
+    "number_violations": 3331
   },
   {
     "violation_precinct": 73,
-    "number_violations": 2723
+    "number_violations": 2662
   },
   {
     "violation_precinct": 74,
-    "number_violations": 34
+    "number_violations": 28
   },
   {
     "violation_precinct": 75,
-    "number_violations": 3292
+    "number_violations": 3250
   },
   {
     "violation_precinct": 76,
-    "number_violations": 2026
+    "number_violations": 1826
   },
   {
     "violation_precinct": 77,
-    "number_violations": 2715
+    "number_violations": 2583
   },
   {
     "violation_precinct": 78,
-    "number_violations": 1584
+    "number_violations": 1466
   },
   {
     "violation_precinct": 79,
-    "number_violations": 3236
+    "number_violations": 3203
   },
   {
     "violation_precinct": 80,
-    "number_violations": 25
+    "number_violations": 28
   },
   {
     "violation_precinct": 81,
-    "number_violations": 1825
+    "number_violations": 1805
   },
   {
     "violation_precinct": 82,
-    "number_violations": 33
+    "number_violations": 29
   },
   {
     "violation_precinct": 83,
-    "number_violations": 4797
+    "number_violations": 4843
   },
   {
     "violation_precinct": 84,
-    "number_violations": 5945
+    "number_violations": 5922
   },
   {
     "violation_precinct": 85,
@@ -341,27 +341,27 @@
   },
   {
     "violation_precinct": 86,
-    "number_violations": 9
+    "number_violations": 8
   },
   {
     "violation_precinct": 87,
-    "number_violations": 42
+    "number_violations": 35
   },
   {
     "violation_precinct": 88,
-    "number_violations": 2233
+    "number_violations": 2209
   },
   {
     "violation_precinct": 89,
-    "number_violations": 21
+    "number_violations": 19
   },
   {
     "violation_precinct": 90,
-    "number_violations": 2156
+    "number_violations": 2186
   },
   {
     "violation_precinct": 91,
-    "number_violations": 13
+    "number_violations": 12
   },
   {
     "violation_precinct": 92,
@@ -373,7 +373,7 @@
   },
   {
     "violation_precinct": 94,
-    "number_violations": 1690
+    "number_violations": 1624
   },
   {
     "violation_precinct": 95,
@@ -381,11 +381,11 @@
   },
   {
     "violation_precinct": 96,
-    "number_violations": 11
+    "number_violations": 12
   },
   {
     "violation_precinct": 97,
-    "number_violations": 12
+    "number_violations": 11
   },
   {
     "violation_precinct": 98,
@@ -393,91 +393,91 @@
   },
   {
     "violation_precinct": 99,
-    "number_violations": 16
+    "number_violations": 14
   },
   {
     "violation_precinct": 100,
-    "number_violations": 2254
+    "number_violations": 2186
   },
   {
     "violation_precinct": 101,
-    "number_violations": 1576
+    "number_violations": 1846
   },
   {
     "violation_precinct": 102,
-    "number_violations": 6314
+    "number_violations": 6344
   },
   {
     "violation_precinct": 103,
-    "number_violations": 5686
+    "number_violations": 5401
   },
   {
     "violation_precinct": 104,
-    "number_violations": 6652
+    "number_violations": 6559
   },
   {
     "violation_precinct": 105,
-    "number_violations": 5344
+    "number_violations": 4979
   },
   {
     "violation_precinct": 106,
-    "number_violations": 2851
+    "number_violations": 2747
   },
   {
     "violation_precinct": 107,
-    "number_violations": 2451
+    "number_violations": 2277
   },
   {
     "violation_precinct": 108,
-    "number_violations": 4386
+    "number_violations": 4446
   },
   {
     "violation_precinct": 109,
-    "number_violations": 2470
+    "number_violations": 2361
   },
   {
     "violation_precinct": 110,
-    "number_violations": 2433
+    "number_violations": 2504
   },
   {
     "violation_precinct": 111,
-    "number_violations": 2090
+    "number_violations": 2202
   },
   {
     "violation_precinct": 112,
-    "number_violations": 2661
+    "number_violations": 2587
   },
   {
     "violation_precinct": 113,
-    "number_violations": 2654
+    "number_violations": 2468
   },
   {
     "violation_precinct": 114,
-    "number_violations": 8439
+    "number_violations": 8005
   },
   {
     "violation_precinct": 115,
-    "number_violations": 4593
+    "number_violations": 4525
   },
   {
     "violation_precinct": 116,
-    "number_violations": 1490
+    "number_violations": 1732
   },
   {
     "violation_precinct": 117,
-    "number_violations": 19
+    "number_violations": 18
   },
   {
     "violation_precinct": 118,
-    "number_violations": 15
+    "number_violations": 14
   },
   {
     "violation_precinct": 119,
-    "number_violations": 23
+    "number_violations": 24
   },
   {
     "violation_precinct": 120,
-    "number_violations": 1856
+    "number_violations": 1804
   },
   {
     "violation_precinct": 121,
@@ -485,19 +485,19 @@
   },
   {
     "violation_precinct": 122,
-    "number_violations": 1272
+    "number_violations": 1199
   },
   {
     "violation_precinct": 123,
-    "number_violations": 892
+    "number_violations": 924
   },
   {
     "violation_precinct": 124,
-    "number_violations": 2
+    "number_violations": 3
   },
   {
     "violation_precinct": 125,
-    "number_violations": 3
+    "number_violations": 2
   },
   {
     "violation_precinct": 126,
@@ -505,10 +505,14 @@
   },
   {
     "violation_precinct": 127,
-    "number_violations": 1
+    "number_violations": 2
   },
   {
     "violation_precinct": 128,
+    "number_violations": 1
+  },
+  {
+    "violation_precinct": 138,
     "number_violations": 1
   },
   {
@@ -517,10 +521,6 @@
   },
   {
     "violation_precinct": 150,
-    "number_violations": 1
-  },
-  {
-    "violation_precinct": 152,
     "number_violations": 1
   },
   {
@@ -533,11 +533,11 @@
   },
   {
     "violation_precinct": 162,
-    "number_violations": 4
+    "number_violations": 5
   },
   {
     "violation_precinct": 163,
-    "number_violations": 71
+    "number_violations": 65
   },
   {
     "violation_precinct": 164,
@@ -556,14 +556,6 @@
     "number_violations": 3
   },
   {
-    "violation_precinct": 170,
-    "number_violations": 1
-  },
-  {
-    "violation_precinct": 171,
-    "number_violations": 1
-  },
-  {
     "violation_precinct": 173,
     "number_violations": 1
   },
@@ -573,14 +565,10 @@
   },
   {
     "violation_precinct": 180,
-    "number_violations": 2
-  },
-  {
-    "violation_precinct": 181,
     "number_violations": 1
   },
   {
-    "violation_precinct": 183,
+    "violation_precinct": 181,
     "number_violations": 1
   },
   {
@@ -589,10 +577,6 @@
   },
   {
     "violation_precinct": 202,
-    "number_violations": 1
-  },
-  {
-    "violation_precinct": 205,
     "number_violations": 1
   },
   {
@@ -605,10 +589,6 @@
   },
   {
     "violation_precinct": 222,
-    "number_violations": 1
-  },
-  {
-    "violation_precinct": 225,
     "number_violations": 1
   },
   {
@@ -644,6 +624,10 @@
     "number_violations": 1
   },
   {
+    "violation_precinct": 670,
+    "number_violations": 1
+  },
+  {
     "violation_precinct": 675,
     "number_violations": 1
   },
@@ -669,11 +653,11 @@
   },
   {
     "violation_precinct": 805,
-    "number_violations": 12
+    "number_violations": 11
   },
   {
     "violation_precinct": 806,
-    "number_violations": 4
+    "number_violations": 5
   },
   {
     "violation_precinct": 807,
@@ -681,7 +665,7 @@
   },
   {
     "violation_precinct": 808,
-    "number_violations": 4
+    "number_violations": 3
   },
   {
     "violation_precinct": 809,
