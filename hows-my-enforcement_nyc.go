@@ -210,7 +210,7 @@ func (a *App) IndexPost(w http.ResponseWriter, r *http.Request) {
 	}
 	err := json.NewDecoder(r.Body).Decode(&report)
 	if err != nil {
-		log.Errorf("error decoding", err)
+		log.Errorf("error decoding %s", err)
 		a.WebError(w, 400, "invalid body")
 		return
 	}
