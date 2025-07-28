@@ -21,7 +21,7 @@ echo "fetching precinct stats from ${DATASET}, ${DATASET_PREVIOUS} - ${START_DAT
 set -o pipefail
 function get_data() {
     curl -s "https://data.cityofnewyork.us/resource/${DATASET}.json?\$select=violation_precinct,count(*)+as+number_violations&\$where=issuing_agency+in+(%27P%27)+AND+issue_date+between+%27${START_DATE}T00:00:00%27+and+%27${END_DATE}T00:00:00%27&\$group=violation_precinct" | jq -c '.[]' || echo "error" >&2
-    curl -s "https://data.cityofnewyork.us/resource/${DATASET_PREVIOUS}.json?\$select=violation_precinct,count(*)+as+number_violations&\$where=issuing_agency+in+(%27P%27)+AND+issue_date+between+%27${START_DATE}T00:00:00%27+and+%27${END_DATE}T00:00:00%27&\$group=violation_precinct" | jq -c '.[]' || echo "error" >&2
+    # curl -s "https://data.cityofnewyork.us/resource/${DATASET_PREVIOUS}.json?\$select=violation_precinct,count(*)+as+number_violations&\$where=issuing_agency+in+(%27P%27)+AND+issue_date+between+%27${START_DATE}T00:00:00%27+and+%27${END_DATE}T00:00:00%27&\$group=violation_precinct" | jq -c '.[]' || echo "error" >&2
 }
 
 get_data | jq -c '{ (.violation_precinct ) : (.number_violations | tonumber)}' |  jq -c -n 'reduce (inputs | to_entries[]) as {$key,$value} ({}; .[$key] += $value) | to_entries[] | {violation_precinct:(.key | tonumber), number_violations:.value}' | jq -s > precinct_data.json
