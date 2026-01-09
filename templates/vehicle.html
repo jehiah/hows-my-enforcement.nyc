@@ -76,7 +76,7 @@
     <div class="row">
         <div class="col-12 col-lg-10 col-xl-8">
         <h1><a href="/">How is NYC Parking Enforcement?</a></h1>
-        <p class="hide-render">Is NYPD Traffic's parking enforcement consistent and rigerous on your block? <a href="/">Check</a>!</p>
+        <p class="hide-render">Is NYPD Traffic's parking enforcement consistent and rigorous on your block? <a href="/">Check</a>!</p>
         <p class="fw-light hide-render">Enforcement of parking regulations should be consistent and rigorous.</p>
         </div>
     </div>
@@ -91,558 +91,579 @@
                 <a class="nav-link" href="/">Street</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link active" aria-current="page"  href="/precinct">Precinct</a>
+                <a class="nav-link" href="/precinct">Precinct</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/summons">Summons</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/vehicle">Vehicle</a>
             </li>
         </ul>
         
     </div>
 
-<div id="report-data" class="row mb-5"></div>
+    <div class="row mt-3">
+        <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
+            <h2>License Plate</h2>
 
-<div class="row mb-2 text-muted fw-light">
-    <div class="col-lg-8">
-        <p>Open Data is queried directly - there is a delay before some summonses are reflected in open data and that varies by agency and violation.</p>
+            <div class="input-group mb-3">
+                <input type="text" class="form-control" id="license_plate" value="{{.Plate}}" placeholder="License Plate" aria-label="License plate number">
+                <select class="form-select" id="license_state" aria-label="Plate state" data-default-state="{{.State}}">
+                    <option value="AL">AL - Alabama</option>
+                    <option value="AK">AK - Alaska</option>
+                    <option value="AZ">AZ - Arizona</option>
+                    <option value="AR">AR - Arkansas</option>
+                    <option value="CA">CA - California</option>
+                    <option value="CO">CO - Colorado</option>
+                    <option value="CT">CT - Connecticut</option>
+                    <option value="DE">DE - Delaware</option>
+                    <option value="DC">DC - District of Columbia</option>
+                    <option value="FL">FL - Florida</option>
+                    <option value="GA">GA - Georgia</option>
+                    <option value="HI">HI - Hawaii</option>
+                    <option value="ID">ID - Idaho</option>
+                    <option value="IL">IL - Illinois</option>
+                    <option value="IN">IN - Indiana</option>
+                    <option value="IA">IA - Iowa</option>
+                    <option value="KS">KS - Kansas</option>
+                    <option value="KY">KY - Kentucky</option>
+                    <option value="LA">LA - Louisiana</option>
+                    <option value="ME">ME - Maine</option>
+                    <option value="MD">MD - Maryland</option>
+                    <option value="MA">MA - Massachusetts</option>
+                    <option value="MI">MI - Michigan</option>
+                    <option value="MN">MN - Minnesota</option>
+                    <option value="MS">MS - Mississippi</option>
+                    <option value="MO">MO - Missouri</option>
+                    <option value="MT">MT - Montana</option>
+                    <option value="NE">NE - Nebraska</option>
+                    <option value="NV">NV - Nevada</option>
+                    <option value="NH">NH - New Hampshire</option>
+                    <option value="NJ">NJ - New Jersey</option>
+                    <option value="NM">NM - New Mexico</option>
+                    <option value="NY" selected>NY - New York</option>
+                    <option value="NC">NC - North Carolina</option>
+                    <option value="ND">ND - North Dakota</option>
+                    <option value="OH">OH - Ohio</option>
+                    <option value="OK">OK - Oklahoma</option>
+                    <option value="OR">OR - Oregon</option>
+                    <option value="PA">PA - Pennsylvania</option>
+                    <option value="RI">RI - Rhode Island</option>
+                    <option value="SC">SC - South Carolina</option>
+                    <option value="SD">SD - South Dakota</option>
+                    <option value="TN">TN - Tennessee</option>
+                    <option value="TX">TX - Texas</option>
+                    <option value="UT">UT - Utah</option>
+                    <option value="VT">VT - Vermont</option>
+                    <option value="VA">VA - Virginia</option>
+                    <option value="WA">WA - Washington</option>
+                    <option value="WV">WV - West Virginia</option>
+                    <option value="WI">WI - Wisconsin</option>
+                    <option value="WY">WY - Wyoming</option>
+                    <option value="ON">ON - Ontario</option>
+                    <option value="QC">QC - Quebec</option>
+                </select>
+                <button id="query-button" type="button" class="btn btn-info">Search</button>
+            </div>
+            <p class="text-muted small">Enter the vehicle plate and state to see recent parking activity and NYPD moving violations for that plate.</p>
+        </div>
     </div>
-</div>
-<div class="row">
-    <footer>
-        <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
-        <p>Data from NYC Open Data:
-            <a href="https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89/about_data">Open Parking and Camera Violations</a>
-            <a href="https://data.cityofnewyork.us/browse?Data-Collection_Data-Collection=DOF+Parking+Violations+Issued&q=&sortBy=alpha&utf8=%E2%9C%93&page=1&pageSize=20">Parking Violations Issued by Fiscal Year</a>.
-        </p>
-    </footer>
-</div>
+
+    <div id="report-data" class="row mb-5"></div>
+
+    <div class="row mb-2 text-muted fw-light">
+        <div class="col-lg-8">
+            <p>Parking and moving violation data is queried directly from NYC Open Data; delays before a summons appears vary by agency and violation type.</p>
+        </div>
+    </div>
+    <div class="row">
+        <footer>
+            <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
+            <p>Data from NYC Open Data:
+                <a href="https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89/about_data">Open Parking and Camera Violations</a>
+                <a href="https://data.cityofnewyork.us/browse?Data-Collection_Data-Collection=DOF+Parking+Violations+Issued&q=&sortBy=alpha&utf8=%E2%9C%93&page=1&pageSize=20">Parking Violations Issued by Fiscal Year</a>
+                <a href="https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Year-to-Date-/57p3-pdcj/">Moving Violation B Summons Year to Date</a>.
+            </p>
+        </footer>
+    </div>
 
 </div>
 
 
 <script type="module">
-    // var utc = require('dayjs/plugin/utc')
-    // dayjs.extend(utc)
-    import FYCalendar from "./static/fy_calendar.js"
-    import Punchcard from "./static/punchcard.js"
 
-
-    const parseDate = d3.utcParse("%Y-%m-%d")
-    const FYLookup = {
-      "FY2024": {
-        "dataset":"pvqr-7yc4", 
-        "start": parseDate("2023-07-01"),
-        "end": {
-            "P":parseDate("2025-05-13"),
-            "T":parseDate("2025-05-17"),
-            "S":parseDate("2025-05-29")
-        }
-      },
-      "FY2023": {
-        "dataset":"869v-vr48", 
-        "start": parseDate("2022-07-01"),
-        "end": parseDate("2023-06-30")
-      },
-      "FY2022": {
-        "dataset":"pvqr-7yc4",
-        "start": parseDate("2022-07-01"),
-        "end": parseDate("2023-07-01")
-      },
-      "FY2021": {
-        "dataset":"7mxj-7a6y",
-        "start": parseDate("2021-07-01"),
-        "end": parseDate("2022-06-30")
-      }
+const parseDate = d3.utcParse("%Y-%m-%d")
+const FYLookup = {
+  "FY2024": {
+    "dataset":"pvqr-7yc4", 
+    "start": parseDate("2023-07-01"),
+    "end": {
+        "P":parseDate("2025-05-13"),
+        "T":parseDate("2025-05-17"),
+        "S":parseDate("2025-05-29")
     }
-    const FY = FYLookup["FY2024"]
+  },
+  "FY2023": {
+    "dataset":"869v-vr48", 
+    "start": parseDate("2022-07-01"),
+    "end": parseDate("2023-06-30")
+  },
+  "FY2022": {
+    "dataset":"pvqr-7yc4",
+    "start": parseDate("2022-07-01"),
+    "end": parseDate("2023-07-01")
+  },
+  "FY2021": {
+    "dataset":"7mxj-7a6y",
+    "start": parseDate("2021-07-01"),
+    "end": parseDate("2022-06-30")
+  }
+}
+const FY = FYLookup["FY2024"]
 
-    const ViolationCodes = {
-        "1":"FAILURE TO DISPLAY BUS PERMIT",
-        "2":"NO OPERATOR NAM/ADD/PH DISPLAY",
-        "3":"UNAUTHORIZED PASSENGER PICK-UP",
-        "4":"BUS PARKING IN LOWER MANHATTAN",
-        "5":"BUS LANE VIOLATION",
-        "6":"OVERNIGHT TRACTOR TRAILER PKG",
-        "7":"FAILURE TO STOP AT RED LIGHT",
-        "8":"IDLING",
-        "9":"OBSTRUCTING TRAFFIC/INTERSECT",
-        "10":"NO STOPPING-DAY/TIME LIMITS",
-        "11":"NO STANDING-HOTEL LOADING",
-        "12":"MOBILE BUS LANE VIOLATION", // "NO STANDING-SNOW EMERGENCY"
-        "13":"NO STANDING-TAXI STAND",
-        "14":"NO STANDING-DAY/TIME LIMITS",
-        "15":"MTA CAMERA DOUBLE PARKING", // "NO STANDING-OFF-STREET LOT",
-        "16":"NO STANDING-EXC. TRUCK LOADING",
-        "17":"NO STANDING-EXC. AUTH. VEHICLE",
-        "18":"NO STANDING-BUS LANE",
-        "19":"NO STANDING-BUS STOP",
-        "20":"NO PARKING-DAY/TIME LIMITS",
-        "21":"NO PARKING-STREET CLEANING",
-        "22":"NO STAND TAXI/FHV RELIEF STAND",
-        "23":"NO PARKING-TAXI STAND",
-        "24":"NO PARKING-EXC. AUTH. VEHICLE",
-        "25":"NO STANDING-COMMUTER VAN STOP",
-        "26":"NO STANDING-FOR HIRE VEH STND",
-        "27":"NO PARKING-EXC. DSBLTY PERMIT",
-        "28":"OVERTIME STANDING DP",
-        "29":"ALTERING INTERCITY BUS PERMIT",
-        "30":"NO STOP/STANDNG EXCEPT PAS P/U",
-        "31":"NO STANDING-COMM METER ZONE",
-        "32":"OT PARKING-MISSING/BROKEN METR",
-        "33":"MISUSE PARKING PERMIT",
-        "34":"EXPIRED METER",
-        "35":"SELLING/OFFERING MCHNDSE-METER",
-        "36":"PHTO SCHOOL ZN SPEED VIOLATION",
-        "37":"EXPIRED MUNI METER",
-        "38":"FAIL TO DSPLY MUNI METER RECPT",
-        "39":"OVERTIME PKG-TIME LIMIT POSTED",
-        "40":"FIRE HYDRANT",
-        "41":"MISCELLANEOUS",
-        "42":"EXPIRED MUNI MTR-COMM MTR ZN",
-        "43":"MTA CAMERA BUS STOP", // "EXPIRED METER-COMM METER ZONE",
-        "44":"PKG IN EXC. OF LIM-COMM MTR ZN",
-        "45":"TRAFFIC LANE",
-        "46":"DOUBLE PARKING",
-        "47":"DOUBLE PARKING-MIDTOWN COMML",
-        "48":"BIKE LANE",
-        "49":"EXCAVATION-VEHICLE OBSTR TRAFF",
-        "50":"CROSSWALK",
-        "51":"SIDEWALK",
-        "52":"INTERSECTION",
-        "53":"SAFETY ZONE",
-        "54":"PCKP DSCHRGE IN PRHBTD ZONE",
-        "55":"ELEVATED/DIVIDED HIGHWAY/TUNNL",
-        "56":"DIVIDED HIGHWAY",
-        "57":"WEIGH IN MOTION VIOLATION", // "BLUE ZONE",
-        "58":"MARGINAL STREET/WATER FRONT",
-        "59":"ANGLE PARKING-COMM VEHICLE",
-        "60":"ANGLE PARKING",
-        "61":"WRONG WAY",
-        "62":"BEYOND MARKED SPACE",
-        "63":"NIGHTTIME STD/ PKG IN A PARK",
-        "64":"NO STANDING EXCP D/S",
-        "65":"OVERTIME STDG D/S",
-        "66":"DETACHED TRAILER",
-        "67":"PEDESTRIAN RAMP",
-        "68":"NON-COMPLIANCE W/ POSTED SIGN",
-        "69":"FAIL TO DISP. MUNI METER RECPT",
-        "70":"REG. STICKER-EXPIRED/MISSING",
-        "71":"INSP. STICKER-EXPIRED/MISSING",
-        "72":"INSP STICKER-MUTILATED/C'FEIT",
-        "73":"REG STICKER-MUTILATED/C'FEIT",
-        "74":"FRONT OR BACK PLATE MISSING",
-        "75":"NO MATCH-PLATE/STICKER",
-        "76":"VIN OBSCURED",
-        "77":"PARKED BUS-EXC. DESIG. AREA",
-        "78":"NGHT PKG ON RESID STR-COMM VEH",
-        "79":"UNAUTHORIZED BUS LAYOVER",
-        "80":"MISSING EQUIPMENT",
-        "81":"NO STANDING EXCP DP",
-        "82":"COMML PLATES-UNALTERED VEHICLE",
-        "83":"IMPROPER REGISTRATION",
-        "84":"PLTFRM LFTS LWRD POS COMM VEH",
-        "85":"STORAGE-3HR COMMERCIAL",
-        "86":"MIDTOWN PKG OR STD-3HR LIMIT",
-        "87":"FRAUDULENT USE PARKING PERMIT",
-        "88":"UNALTERED COMM VEH-NME/ADDRESS",
-        "89":"NO STD(EXC TRKS/GMTDST NO-TRK)",
-        "90":"VEH-SALE/WSHNG/RPRNG/DRIVEWAY",
-        "91":"VEHICLE FOR SALE(DEALERS ONLY)",
-        "92":"WASH/REPAIR VEHCL-REPAIR ONLY",
-        "93":"REMOVE/REPLACE FLAT TIRE",
-        "96":"RAILROAD CROSSING",
-        "97":"VACANT LOT",
-        "98":"OBSTRUCTING DRIVEWAY",
-        "99":"OTHER"
+const ViolationCodes = {
+    "1":"FAILURE TO DISPLAY BUS PERMIT",
+    "2":"NO OPERATOR NAM/ADD/PH DISPLAY",
+    "3":"UNAUTHORIZED PASSENGER PICK-UP",
+    "4":"BUS PARKING IN LOWER MANHATTAN",
+    "5":"BUS LANE VIOLATION",
+    "6":"OVERNIGHT TRACTOR TRAILER PKG",
+    "7":"FAILURE TO STOP AT RED LIGHT",
+    "8":"IDLING",
+    "9":"OBSTRUCTING TRAFFIC/INTERSECT",
+    "10":"NO STOPPING-DAY/TIME LIMITS",
+    "11":"NO STANDING-HOTEL LOADING",
+    "12":"MOBILE BUS LANE VIOLATION",
+    "13":"NO STANDING-TAXI STAND",
+    "14":"NO STANDING-DAY/TIME LIMITS",
+    "15":"MTA CAMERA DOUBLE PARKING",
+    "16":"NO STANDING-EXC. TRUCK LOADING",
+    "17":"NO STANDING-EXC. AUTH. VEHICLE",
+    "18":"NO STANDING-BUS LANE",
+    "19":"NO STANDING-BUS STOP",
+    "20":"NO PARKING-DAY/TIME LIMITS",
+    "21":"NO PARKING-STREET CLEANING",
+    "22":"NO STAND TAXI/FHV RELIEF STAND",
+    "23":"NO PARKING-TAXI STAND",
+    "24":"NO PARKING-EXC. AUTH. VEHICLE",
+    "25":"NO STANDING-COMMUTER VAN STOP",
+    "26":"NO STANDING-FOR HIRE VEH STND",
+    "27":"NO PARKING-EXC. DSBLTY PERMIT",
+    "28":"OVERTIME STANDING DP",
+    "29":"ALTERING INTERCITY BUS PERMIT",
+    "30":"NO STOP/STANDNG EXCEPT PAS P/U",
+    "31":"NO STANDING-COMM METER ZONE",
+    "32":"OT PARKING-MISSING/BROKEN METR",
+    "33":"MISUSE PARKING PERMIT",
+    "34":"EXPIRED METER",
+    "35":"SELLING/OFFERING MCHNDSE-METER",
+    "36":"PHTO SCHOOL ZN SPEED VIOLATION",
+    "37":"EXPIRED MUNI METER",
+    "38":"FAIL TO DSPLY MUNI METER RECPT",
+    "39":"OVERTIME PKG-TIME LIMIT POSTED",
+    "40":"FIRE HYDRANT",
+    "41":"MISCELLANEOUS",
+    "42":"EXPIRED MUNI MTR-COMM MTR ZN",
+    "43":"MTA CAMERA BUS STOP",
+    "44":"PKG IN EXC. OF LIM-COMM MTR ZN",
+    "45":"TRAFFIC LANE",
+    "46":"DOUBLE PARKING",
+    "47":"DOUBLE PARKING-MIDTOWN COMML",
+    "48":"BIKE LANE",
+    "49":"EXCAVATION-VEHICLE OBSTR TRAFF",
+    "50":"CROSSWALK",
+    "51":"SIDEWALK",
+    "52":"INTERSECTION",
+    "53":"SAFETY ZONE",
+    "54":"PCKP DSCHRGE IN PRHBTD ZONE",
+    "55":"ELEVATED/DIVIDED HIGHWAY/TUNNL",
+    "56":"DIVIDED HIGHWAY",
+    "57":"WEIGH IN MOTION VIOLATION",
+    "58":"MARGINAL STREET/WATER FRONT",
+    "59":"ANGLE PARKING-COMM VEHICLE",
+    "60":"ANGLE PARKING",
+    "61":"WRONG WAY",
+    "62":"BEYOND MARKED SPACE",
+    "63":"NIGHTTIME STD/ PKG IN A PARK",
+    "64":"NO STANDING EXCP D/S",
+    "65":"OVERTIME STDG D/S",
+    "66":"DETACHED TRAILER",
+    "67":"PEDESTRIAN RAMP",
+    "68":"NON-COMPLIANCE W/ POSTED SIGN",
+    "69":"FAIL TO DISP. MUNI METER RECPT",
+    "70":"REG. STICKER-EXPIRED/MISSING",
+    "71":"INSP. STICKER-EXPIRED/MISSING",
+    "72":"INSP STICKER-MUTILATED/C'FEIT",
+    "73":"REG STICKER-MUTILATED/C'FEIT",
+    "74":"FRONT OR BACK PLATE MISSING",
+    "75":"NO MATCH-PLATE/STICKER",
+    "76":"VIN OBSCURED",
+    "77":"PARKED BUS-EXC. DESIG. AREA",
+    "78":"NGHT PKG ON RESID STR-COMM VEH",
+    "79":"UNAUTHORIZED BUS LAYOVER",
+    "80":"MISSING EQUIPMENT",
+    "81":"NO STANDING EXCP DP",
+    "82":"COMML PLATES-UNALTERED VEHICLE",
+    "83":"IMPROPER REGISTRATION",
+    "84":"PLTFRM LFTS LWRD POS COMM VEH",
+    "85":"STORAGE-3HR COMMERCIAL",
+    "86":"MIDTOWN PKG OR STD-3HR LIMIT",
+    "87":"FRAUDULENT USE PARKING PERMIT",
+    "88":"UNALTERED COMM VEH-NME/ADDRESS",
+    "89":"NO STD(EXC TRKS/GMTDST NO-TRK)",
+    "90":"VEH-SALE/WSHNG/RPRNG/DRIVEWAY",
+    "91":"VEHICLE FOR SALE(DEALERS ONLY)",
+    "92":"WASH/REPAIR VEHCL-REPAIR ONLY",
+    "93":"REMOVE/REPLACE FLAT TIRE",
+    "96":"RAILROAD CROSSING",
+    "97":"VACANT LOT",
+    "98":"OBSTRUCTING DRIVEWAY",
+    "99":"OTHER"
+}
+const nonParkingViolations = new Set([
+    "3", "7", "8", "29", "33", "36", "41", "54", "70","71", "72", "73", "74", "75", "76", "80", "82", "83", "84", "87", "88", "91", "97", "99"
+])
+
+const agencyLookup = {
+    "P": "Police Department",
+    "T": "Traffic",
+    "S": "Sanitation",
+    "K": "Parks",
+}
+
+const dtFormat = new Intl.DateTimeFormat("en-US")
+const dtFormatDateTime = new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+})
+
+const MOVING_DATASET_ID = "57p3-pdcj"
+const MOVING_DATASET_BASE = `https://data.cityofnewyork.us/resource/${MOVING_DATASET_ID}.json`
+const MOVING_DATASET_ABOUT = "https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Year-to-Date-/57p3-pdcj/"
+const movingViolationLookup = {}
+
+dayjs.extend(dayjs_plugin_utc)
+
+const licensePlateInput = document.getElementById("license_plate")
+const licenseStateSelect = document.getElementById("license_state")
+const queryButton = document.getElementById("query-button")
+const reportContainer = document.getElementById("report-data")
+
+function escapeSoqlValue(value) {
+    return String(value).replace(/'/g, "''")
+}
+
+function normalizePlate(value) {
+    if (!value) {
+        return ""
     }
-    const nonParkingViolations = new Set([
-        "3", "7", "8", "29", "33", "36", "41", "54", "70","71", "72", "73", "74", "75", "76", "80", "82", "83", "84", "87", "88", "91", "97", "99"
-    ])
+    return String(value).trim().toUpperCase().replace(/[^A-Z0-9]/g, "")
+}
 
-    const agencyLookup = {
-        "P": "Police Department",
-        "T": "Traffic",
-        "S": "Sanitation",
-        "K": "Parks",
-    }
+function resolveStateValue(value, fallback = "") {
+    const normalized = value ? String(value).trim().toUpperCase() : ""
+    return normalized || (fallback ? String(fallback).trim().toUpperCase() : "")
+}
 
-    const boroughLookup = {
-        "Brooklyn": "bk",
-        "Queens": "qn",
-        "Manhattan": "ny",
-        "Bronx": "bx",
-        "Staten Island": "si",
-    }
-
-const dtFormat = new Intl.DateTimeFormat("en-US");
-
-function getData(query) {
+function getParkingData(query) {
     return Promise.all([
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
-    ]).then(results => Promise.all(results.map(r => r.text())))
-    .then(results => {
-        const d1 = d3.csvParse(results[0])
-        const d2 = d3.csvParse(results[1])
-        d1.push(...d2)
-        return d1
+        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2024"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`),
+        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2023"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`)
+    ])
+    .then(results => Promise.all(results.map(r => r.text())))
+    .then(([current, prior]) => {
+        const parsed = d3.csvParse(current)
+        parsed.push(...d3.csvParse(prior))
+        return parsed
     })
 }
 
-const enOrdinalRules = new Intl.PluralRules("en-US", { type: "ordinal" });
+function getMovingViolations(plate, state) {
+    const filters = [`upper(reg_plate_num)='${escapeSoqlValue(plate)}'`]
+    if (state) {
+        filters.push(`reg_state_cd='${escapeSoqlValue(state)}'`)
+    }
+    const params = new URLSearchParams({
+        "$select": "evnt_key,violation_date,violation_time,chg_law_cd,violation_code,veh_category,reg_plate_num,reg_state_cd,city_nm,rpt_owning_cmd,juris_cd",
+        "$limit": "5000",
+        "$order": "violation_date DESC",
+        "$where": filters.join(" AND ")
+    })
+    return fetch(`${MOVING_DATASET_BASE}?${params.toString()}`).then(response => response.json())
+}
 
-const suffixes = new Map([
-  ["one", "st"],
-  ["two", "nd"],
-  ["few", "rd"],
-  ["other", "th"],
-]);
-const formatOrdinals = (n) => {
-//   const v = parseInt(n, 10)
-  const rule = enOrdinalRules.select(n);
-  const suffix = suffixes.get(rule);
-  return `${n}${suffix}`;
-};
+function renderMovingViolations(container, records, plate, state) {
+    const section = container.appendChild(document.createElement("div"))
+    section.className = "mt-4"
+    const heading = section.appendChild(document.createElement("h3"))
+    heading.innerText = "Moving violations (B Summons)"
+    const dataSource = section.appendChild(document.createElement("p"))
+    dataSource.className = "text-muted small"
+    dataSource.appendChild(document.createTextNode("Data from "))
+    const link = dataSource.appendChild(document.createElement("a"))
+    link.href = MOVING_DATASET_ABOUT
+    link.innerText = "Moving Violation B Summons Year to Date"
+    dataSource.appendChild(document.createTextNode("."))
+    if (records.length === 0) {
+        const empty = section.appendChild(document.createElement("p"))
+        empty.className = "summary"
+        empty.innerText = `No moving violations found for ${state}:${plate}.`
+        return
+    }
 
-// function to query NYC Open Data and render D3 calendar chart
-function queryNYCOpenData(precinct) {
-    const issuingAgency = "P"
-    let end = FY.end[issuingAgency]
-    dayjs.extend(dayjs_plugin_utc)
-    let startDate = dayjs(end).utcOffset(0).date(1).subtract(11, 'month').toDate()
+    const parseDateTime = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L")
+    records.forEach(row => {
+        row.violation_dt = parseDateTime(row.violation_date)
+        if (row.violation_dt && row.violation_time) {
+            const [hours, minutes] = row.violation_time.split(":")
+            if (hours !== undefined && minutes !== undefined) {
+                row.violation_dt.setUTCHours(parseInt(hours, 10))
+                row.violation_dt.setUTCMinutes(parseInt(minutes, 10))
+            }
+        }
+    })
+    records.sort((a, b) => d3.descending(a.violation_dt || 0, b.violation_dt || 0))
 
-    document.getElementById("report-data").innerHTML = ''
-    const el = document.createElement("div");
-    el.className = "col-12 mb-2 py-2 bg-white";
-    document.getElementById("report-data").appendChild(el)
+    const table = section.appendChild(document.createElement("table"))
+    table.className = "table table-sm table-xsm table-striped mb-2 p-2"
+    const thead = table.appendChild(document.createElement("thead"))
+    const tr = thead.appendChild(document.createElement("tr"))
+    tr.className = "bg-dark text-light"
+    tr.appendChild(document.createElement("th")).innerText = "Date"
+    tr.appendChild(document.createElement("th")).innerText = "Violation"
+    tr.appendChild(document.createElement("th")).innerText = "Vehicle"
+    tr.appendChild(document.createElement("th")).innerText = "City / Command"
+    tr.appendChild(document.createElement("th")).innerText = "Jurisdiction"
+
+    const tbody = table.appendChild(document.createElement("tbody"))
+    records.forEach(row => {
+        const dataRow = tbody.appendChild(document.createElement("tr"))
+        dataRow.appendChild(document.createElement("td")).innerText = row.violation_dt ? dtFormatDateTime.format(row.violation_dt) : (row.violation_date || "")
+        const violationCell = dataRow.appendChild(document.createElement("td"))
+        const violationParts = []
+        if (row.chg_law_cd) {
+            violationParts.push(row.chg_law_cd)
+        }
+        if (row.violation_code) {
+            violationParts.push(row.violation_code)
+        }
+        let violationLabel = violationParts.join(" ")
+        if (movingViolationLookup[row.violation_code]) {
+            violationLabel += violationLabel ? ` - ${movingViolationLookup[row.violation_code]}` : movingViolationLookup[row.violation_code]
+        }
+        violationCell.innerText = violationLabel || "—"
+
+        const vehicleCell = dataRow.appendChild(document.createElement("td"))
+        let vehicleLabel = row.reg_state_cd && row.reg_plate_num ? `${row.reg_state_cd}:${row.reg_plate_num}` : `${state}:${plate}`
+        if (row.veh_category) {
+            vehicleLabel += ` (${row.veh_category})`
+        }
+        vehicleCell.innerText = vehicleLabel
+
+        const cityParts = []
+        if (row.city_nm) {
+            cityParts.push(row.city_nm)
+        }
+        if (row.rpt_owning_cmd) {
+            cityParts.push(row.rpt_owning_cmd)
+        }
+        dataRow.appendChild(document.createElement("td")).innerText = cityParts.length ? cityParts.join(" • ") : "—"
+        dataRow.appendChild(document.createElement("td")).innerText = row.juris_cd || "—"
+    })
+}
+
+function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
+    const normalizedPlate = normalizePlate(plateValue)
+    if (!normalizedPlate) {
+        licensePlateInput.classList.add("is-invalid")
+        licensePlateInput.focus()
+        return
+    }
+    const fallbackState = resolveStateValue(licenseStateSelect.dataset.defaultState || "NY", "NY") || "NY"
+    const normalizedState = resolveStateValue(stateValue, fallbackState)
+
+    licensePlateInput.value = normalizedPlate
+    licenseStateSelect.value = normalizedState
+    licensePlateInput.classList.remove("is-invalid")
+
+    if (updateHistory) {
+        const qs = new URLSearchParams()
+        qs.set("plate", normalizedPlate)
+        if (normalizedState) {
+            qs.set("state", normalizedState)
+        }
+        history.pushState(null, document.title, window.location.pathname + "?" + qs.toString())
+    }
+
+    reportContainer.innerHTML = ''
+    const el = document.createElement("div")
+    el.className = "col-12 mb-2 py-2 bg-white"
+    reportContainer.appendChild(el)
     const heading = document.createElement("h2")
-    const dateFormat = d3.utcFormat("%Y-%m-%d")
-    heading.innerText = `Violations written by Police in ${formatOrdinals(precinct)} Precinct between ${dateFormat(startDate)} and ${dateFormat(end)}`
-    // heading.class="m-3"
+    heading.innerText = `Parking violations for ${normalizedState}:${normalizedPlate}`
     el.appendChild(heading)
+    const dateFormat = d3.utcFormat("%Y-%m-%d")
+    const end = FY.end["P"]
+    const startDate = dayjs(end).utcOffset(0).date(1).subtract(11, 'month').toDate()
+    const rangeLabel = el.appendChild(document.createElement("p"))
+    rangeLabel.className = "text-muted"
+    rangeLabel.innerText = `${dateFormat(startDate)} - ${dateFormat(end)}`
 
-
-    let spinner = document.createElement("div")
+    const spinner = document.createElement("div")
     spinner.className = "spinner-border m-5"
     spinner.setAttribute("role", "status")
-    // spinner.innerText = "Loading ..." FIXME: invalid html structure; see https://getbootstrap.com/docs/5.2/components/spinners/
+    spinner.setAttribute("aria-label", "Loading parking violations")
     el.appendChild(spinner)
 
-    let filters = [
-       `issue_date between '${dateFormat(startDate)}T00:00:00' and '${dateFormat(end)}T23:59:59'`
-    ];
-    let displayFilters = [
-      `issue_date between ${dateFormat(startDate)} and ${dateFormat(end)}`,
-    ];
+    const filters = [
+        `issue_date between '${dateFormat(startDate)}T00:00:00' and '${dateFormat(end)}T23:59:59'`,
+        `upper(plate_id)='${escapeSoqlValue(normalizedPlate)}'`
+    ]
+    const displayFilters = [
+        `issue_date between ${dateFormat(startDate)} and ${dateFormat(end)}`,
+        `upper(plate_id)='${normalizedPlate}'`
+    ]
+    if (normalizedState) {
+        filters.push(`registration_state='${escapeSoqlValue(normalizedState)}'`)
+        displayFilters.push(`registration_state='${normalizedState}'`)
+    }
+    const queryString = `&$where=${filters.join(" AND ")}&$order=issue_date DESC`
 
-    filters.push(`violation_precinct = ${precinct}`)
-    displayFilters.push(`violation_precinct = ${precinct}`)
-    filters.push(`issuing_agency='${issuingAgency}'`)
-    displayFilters.push(`issuing_agency='${issuingAgency}' // ${agencyLookup[issuingAgency]}`)
-    const queryString = `&$where=${filters.join(" AND ")}`
-
-
-    getData(queryString).then(function(data) {
-        // parse date strings to Date objects
-        const parseDate = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L");
-        const parseTime = d3.utcParse("%I%M%p");
+    Promise.all([getParkingData(queryString), getMovingViolations(normalizedPlate, normalizedState)])
+    .then(([data, movingViolations]) => {
+        spinner.remove()
+        const parseDateTime = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L")
+        const parseTime = d3.utcParse("%I%M%p")
         const dtFormatHour = new Intl.DateTimeFormat("en-US", {
             hour: "numeric",
             minute: "numeric",
-            // dayPeriod: "narrow",
             hour12: true,
             timeZone: "UTC",
-        });
-        if (data.length == 100000) {
-            alert("⚠️ The Open Data Query returned the maximum results. Data is truncated. Narrow the street selection for complete results.")
+        })
+        if (data.length === 100000) {
+            alert("⚠️ The Open Data query returned the maximum results. Data may be truncated. Narrow the timeframe for complete results.")
         }
-        data.forEach(function(d) {
-            d.issue_date = parseDate(d.issue_date);
+        data.forEach(d => {
+            d.issue_date = parseDateTime(d.issue_date)
             d.count = 1
-            // d.issue_date_dayonly = parseDate(d.issue_date); // day granularity (no time component)
-
-            let violation_time = parseTime(d.violation_time + "M")
-            if (violation_time != null ) {
+            const violation_time = parseTime(d.violation_time + "M")
+            if (violation_time) {
                 d.issue_date.setUTCHours(violation_time.getUTCHours())
                 d.issue_date.setUTCMinutes(violation_time.getUTCMinutes())
                 d.violation_time = dtFormatHour.format(d.issue_date)
             }
         })
 
-        let seenSummons = {}
-        data = data.filter( d=> { 
-            if (d.issue_date < startDate || d.issue_date > end) { return false; }
-            // dedupe across two fiscal year datasets - they have overlap
+        const seenSummons = {}
+        const filtered = data.filter(d => {
+            if (d.issue_date < startDate || d.issue_date > end) { return false }
             const key = d.summons_number + ' ' +  d.violation_code
-            if (seenSummons[key])  return false
+            if (seenSummons[key]) { return false }
             seenSummons[key] = true
             return true
-        });
-        seenSummons = null
-
-        data.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
-        const parkingData = data.filter(d => !nonParkingViolations.has(d.violation_code))
-        const nonParkingData = data.filter(d => nonParkingViolations.has(d.violation_code))
-        // console.log("matching data", data.length, data.slice(0,10))
-
-        // group data by issue_date
-        const groupByDate = d3.rollups(parkingData, v => v.length, d => d3.utcDay(d.issue_date));
-        let topDate = undefined;
-        let topDateCount = undefined;
-        if (groupByDate.length > 0) {
-            topDate = d3.greatest(groupByDate, ([, v]) => v)[0];
-            topDateCount = d3.greatest(groupByDate, ([, v]) => v)[1];
-        }
-
-        const violationsByDay = groupByDate.map(([k,v]) => {return {date:k, count:v}})
-        const groupOfDate = violationsByDay.map(d => d.date.toDateString())
-        // extend to include zero counts for empty days
-        violationsByDay.push(... d3.utcDay.range(startDate, end).filter(d => {return groupOfDate.indexOf(d.toDateString()) == -1}).map(k => { return {date:k, count:0}}))
-
-        // const groupByAgency = d3.rollups(parkingData, v => v.length, d => d.issuing_agency);
-        const groupByAgency = []
-        const groupByViolation = d3.rollups(parkingData, v => v.length, d => d.violation_code);
-        let topViolation = undefined
-        let topViolationCount = undefined
-        if (groupByViolation.length >= 1) {
-            topViolation = d3.greatest(groupByViolation, ([, v]) => v)[0];
-            topViolationCount = d3.greatest(groupByViolation, ([, v]) => v)[1];
-        }
-        const nonParkingGroupByViolation = d3.rollups(nonParkingData, v => v.length, d => d.violation_code);
-        let nonParkingTopViolation = undefined
-        let nonParkingTopViolationCount = undefined
-        if (nonParkingGroupByViolation.length >= 1) {
-            nonParkingTopViolation = d3.greatest(nonParkingGroupByViolation, ([, v]) => v)[0];
-            nonParkingTopViolationCount = d3.greatest(nonParkingGroupByViolation, ([, v]) => v)[1];
-        }
-
-        const dtFormatLong = new Intl.DateTimeFormat("en-US", {
-            weekday: "short",
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            timeZone: "UTC",
-        });
-
-        const maxVal = d3.max(violationsByDay, d=> d.count)
-
-        let summary = el.appendChild(document.createElement("p"))
-        summary.className="summary"
-        let summaryParagraphs = [
-            `<mark>${parkingData.length}</mark> parking violations were issued`,
-            ` by <mark>${agencyLookup[issuingAgency]}</mark> in ${formatOrdinals(precinct)} Precinct`,
-            ` on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
-          <mark>${d3.utcFormat("%b %d %Y")(startDate)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(end)}</mark> 
-          (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days)`,
-          parkingData.length > 1 ? ` an average of <mark>${d3.format("0.1f")(parkingData.length / groupByDate.length)}</mark> per day` : "",
-          `.`
-        ]
-
-        summary.innerHTML = summaryParagraphs.join("")
-
-
-        summary = el.appendChild(document.createElement("p"))
-        summary.className="summary"
-        summaryParagraphs = [
-        //   `There were <mark>${data.length}</mark> violations recorded`,
-        //   ` for street <mark>${street}</mark> `,
-        //   ` for addresses <mark>${houseStart}-${houseEnd}</mark>`,
-        //   (validIntersections.length == 0 ? "" :` or <mark>${validIntersections.length}</mark> intersecting streets`),
-        //   `. `
-        ]
-
-        if (parkingData.length > 0 ) {
-            if (groupByDate.length > 1) {
-                summaryParagraphs.push(`<mark>${dtFormatLong.format(topDate)}</mark> had the most parking violations issued (<mark>${topDateCount}</mark>). `)
-            }
-            summaryParagraphs.push(`The most common parking violation was <mark>${ViolationCodes[topViolation]}</mark> (issued <mark>${topViolationCount}</mark> times). `)
-        }
-        if (nonParkingData.length > 0) {
-            summaryParagraphs.push(`There ${nonParkingData.length == 1 ? "was":"were"} <mark>${nonParkingData.length}</mark> non-parking violations issued. `)
-            summaryParagraphs.push(`The most common non-parking violation was <mark>${ViolationCodes[nonParkingTopViolation]}</mark> (issued <mark>${nonParkingTopViolationCount}</mark> times). `)
-        }
-
-        // TODO: use the filter not the results
-        // if (groupByAgency.length > 1) {
-        //     groupByAgency.sort((a, b) => d3.descending(a[1], b[1])).forEach(([agency, count]) => {
-        //         summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> parking violations (<mark>${d3.format("0.1%")(count/parkingData.length)}</mark>). `)
-        //     })
-        // }
-
-        summary.innerHTML = summaryParagraphs.join("")
-
-
-        let container = document.createElement("div")
-        container.className = "calendar-chart"
-        el.appendChild(container)
-
-        let cellSize = 14
-        const width = container.offsetWidth - parseFloat(getComputedStyle(container).paddingLeft, 10)- parseFloat(getComputedStyle(container).paddingRight, 10)
-        if (width > 900) {
-            cellSize = 16
-        }
-
-        // create calendar chart
-        const titleDateFormat = d3.utcFormat("%A %b %d %Y");
-        const calendarChart = FYCalendar(violationsByDay, {
-            x: d => d.date,
-            y: d => d.count,
-            Xmin: startDate,
-            Xmax: end,
-            // color: d3.scaleSequential([0, maxVal], d3.interpolateSpectral),
-            color: d3.scaleSequential([1, maxVal], d3.interpolateHcl("#fafa6e", "#2A4858")),
-            emptyColor: "#f3f3f3",
-            weekday:"sunday",
-            // width:900,
-            // yFormat: "%d",
-            cellSize: cellSize,
-            cellPadding: 2,
-            monthPadding: 17 + 2,
-            formatMonth: "%b %Y",
-            // title: d => d.count
-            // todo: https://medium.com/@kj_schmidt/show-data-on-mouse-over-with-d3-js-3bf598ff8fc2
-            title: d => d.count > 0 ? `${titleDateFormat(d.date)}: ${d.count} violations` : ""
         })
 
-
-        // container.appendChild(Legend(
-        //     calendarChart.scales.color, {
-        //         title: "FY 2022-2023 Violations/day",
-        //         width: 500,
-        //     }
-        // ));
-        el.removeChild(spinner)
-
-
-        container = document.createElement("div")
-        container.className = "calendar-chart mb-4"
-        container.appendChild(calendarChart)
-        el.appendChild(container)
-
-        if (parkingData.length > 0) {
-            // create calendar chart
-            const punchcard = Punchcard(parkingData, {
-                x: d => d.issue_date,
-                y: d => d.count,
-                // color: d3.scaleSequential([0, maxVal], d3.interpolateSpectral),
-                color: d3.interpolateHcl("rgb(71, 184, 135)", "#2A4858"),
-                emptyColor: "#aaa",
-                weekday:"sunday",
-                // width:(25 + (22+1) * 24),
-                // yFormat: "%d",
-                cellSize: 22,
-                cellPadding: 1,
-                // formatMonth: "%b %Y",
-                // title: d => d.count
-                // todo: https://medium.com/@kj_schmidt/show-data-on-mouse-over-with-d3-js-3bf598ff8fc2
-                // title: d => d.count > 0 ? `${dtFormat.format(d.date)}: ${d.count}` : ""
-            })
-            container = document.createElement("div")
-            container.className = "punchcard-chart mb-4"
-            container.appendChild(punchcard)
-            el.appendChild(container)
+        if (filtered.length === 0) {
+            const empty = document.createElement("p")
+            empty.className = "summary"
+            empty.innerText = `No parking violations found for ${normalizedState}:${normalizedPlate} between ${dateFormat(startDate)} and ${dateFormat(end)}.`
+            el.appendChild(empty)
+            renderMovingViolations(el, movingViolations, normalizedPlate, normalizedState)
+            return
         }
 
-        // {{if .SavePreview }}
-        // html2canvas(document.body, {
-        //     backgroundColor: "#ffd900",
-        //     width: 800,
-        //     height: 400,
-        //     windowWidth: 800,
-        //     widowHeight: 400,
-        //     onclone: d => {
-        //         // console.log(d);
-        //         d.getElementsByTagName("body")[0].className="render"
-        //     },
-        //     ignoreElements: e => e.classList.contains("hide-render")
-        // }).then(function(canvas) {
-        //     canvas.toBlob((blob) => {
-        //         fetch('', {
-        //             method: "put",
-        //             headers: {
-        //                 'Content-type': 'image/png'
-        //             },
-        //             body: blob
-        //         })
-        //     })
-        // });
-        // {{end}}
+        filtered.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
 
-
-        // container = document.createElement("div")
-        // container.className = "agency-chart"
-        // container.appendChild(BarChart(groupByAgency, {
-        //     x: d => d[1],
-        //     y: d => d[0],
-        //     //   yDomain: d3.groupSort(alphabet, ([d]) => -d.frequency, d => d.letter), // sort by descending frequency
-        //     //   xFormat: "%",
-        //     xLabel: "Frequency →",
-        //     //   width,
-        //     color: "steelblue"
-        // }))
-        // el.appendChild(container)
-
-        let debugQuery = el.appendChild(document.createElement("div"))
+        const debugQuery = el.appendChild(document.createElement("div"))
         debugQuery.className = "query mb-2 lh-sm"
-        debugQuery.innerHTML=displayFilters.map(d=>`<code>${d}</code><br>`).join("\n")
+        debugQuery.innerHTML = displayFilters.map(d => `<code>${d}</code><br>`).join("\n")
 
 
         const table = el.appendChild(document.createElement("table"))
         table.className = "table table-sm table-xsm table-striped mb-2 p-2"
-
         const thead = table.appendChild(document.createElement("thead"))
-        const tr = thead.appendChild(document.createElement("tr"))
-        tr.className = "bg-dark text-light"
-        tr.appendChild(document.createElement("th")).innerText = "Date"
-        tr.appendChild(document.createElement("th")).innerText = "Summons"
-        tr.appendChild(document.createElement("th")).innerText = "License"
-        tr.appendChild(document.createElement("th")).innerText = "Location"
-        let cell = tr.appendChild(document.createElement("th"))
-        cell.className = groupByAgency.length > 1 ? "agencies": "agency"
-        cell.innerText = "Agency"
-        tr.appendChild(document.createElement("th")).innerText = "Violation"
+        const headerRow = thead.appendChild(document.createElement("tr"))
+        headerRow.className = "bg-dark text-light"
+        headerRow.appendChild(document.createElement("th")).innerText = "Date"
+        headerRow.appendChild(document.createElement("th")).innerText = "Summons"
+        headerRow.appendChild(document.createElement("th")).innerText = "License"
+        headerRow.appendChild(document.createElement("th")).innerText = "Location"
+        const agencyCell = headerRow.appendChild(document.createElement("th"))
+        agencyCell.className =  "agency"
+        agencyCell.innerText = "Agency"
+        headerRow.appendChild(document.createElement("th")).innerText = "Violation"
 
         const tbody = table.appendChild(document.createElement("tbody"))
-        data.forEach(d => {
+        filtered.forEach(d => {
             const tr = tbody.appendChild(document.createElement("tr"))
             tr.className = nonParkingViolations.has(d.violation_code) ? "non-parking-violation" : "parking-violation"
-            tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time // TODO format
-            let cell = tr.appendChild(document.createElement("td"))
-            cell.className = "summons font-monospace"
-            let a = cell.appendChild(document.createElement("a"))
-            a.href = "/summons?" + (new URLSearchParams({"number":d.summons_number})).toString()
+            tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time
+            const summonsCell = tr.appendChild(document.createElement("td"))
+            summonsCell.className = "summons font-monospace"
+            const a = summonsCell.appendChild(document.createElement("a"))
+            a.href = "/summons?" + (new URLSearchParams({"number": d.summons_number})).toString()
             a.rel = "nofollow"
             a.innerText = d.summons_number
 
-            cell = tr.appendChild(document.createElement("td"))
-            cell.innerText = d.registration_state + ":" + d.plate_id 
-            cell.className = "font-monospace"
-            tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street == "" ? "":  " @ " + d.intersecting_street)
-            cell = tr.appendChild(document.createElement("td"))
-            cell.className = groupByAgency.length > 1 ? "agencies": "agency"
-            cell.innerText = agencyLookup[d.issuing_agency]
+            const licenseCell = tr.appendChild(document.createElement("td"))
+            licenseCell.className = "font-monospace"
+            licenseCell.innerText = d.registration_state + ":" + d.plate_id
+            tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street === "" ? "" : " @ " + d.intersecting_street)
+            const agencyCellRow = tr.appendChild(document.createElement("td"))
+            agencyCellRow.className = "agency"
+            agencyCellRow.innerText = agencyLookup[d.issuing_agency]
             tr.appendChild(document.createElement("td")).innerText = ViolationCodes[d.violation_code]
         })
         el.appendChild(table)
-        return false;
-    });
-
-}
-function nullString(s) {
-    return s === null ? "" : s
-}
-function defaultString(s, d) {
-    return s === "" ? d : s
+        renderMovingViolations(el, movingViolations, normalizedPlate, normalizedState)
+    })
+    .catch(err => {
+        spinner.remove()
+        console.error(err)
+        const alertBox = document.createElement("div")
+        alertBox.className = "alert alert-danger"
+        alertBox.innerText = "Unable to fetch vehicle data right now. Please try again."
+        el.appendChild(alertBox)
+    })
 }
 
 function bootstrap() {
-    const urlSearchParams = new URLSearchParams(window.location.search)
-    let urlPrecinct = nullString(urlSearchParams.get("precinct"))
-    queryNYCOpenData(urlPrecinct)
+    const defaultState = resolveStateValue(licenseStateSelect.dataset.defaultState || "NY", "NY") || "NY"
+    licenseStateSelect.value = defaultState
+    const params = new URLSearchParams(window.location.search)
+    const presetPlate = normalizePlate(params.get("plate"))
+    const presetState = resolveStateValue(params.get("state"), defaultState)
+    if (presetState) {
+        licenseStateSelect.value = presetState
+    }
+    if (presetPlate) {
+        licensePlateInput.value = presetPlate
+        queryVehicleHistory(presetPlate, licenseStateSelect.value, false)
+    }
 }
+
+function handleSearch(updateHistory = true) {
+    queryVehicleHistory(licensePlateInput.value, licenseStateSelect.value, updateHistory)
+}
+
+queryButton.addEventListener("click", () => handleSearch(true))
+licensePlateInput.addEventListener("keyup", (event) => {
+    if (event.key === "Enter") {
+        handleSearch(true)
+    }
+})
+licensePlateInput.addEventListener("input", () => {
+    licensePlateInput.classList.remove("is-invalid")
+})
+licenseStateSelect.addEventListener("change", () => {
+    if (normalizePlate(licensePlateInput.value)) {
+        handleSearch(true)
+    }
+})
+
 bootstrap()
-
-
 
 </script>
 </body>

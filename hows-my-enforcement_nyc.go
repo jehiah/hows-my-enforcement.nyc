@@ -340,16 +340,16 @@ func (a *App) Summons(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) Vehicle(w http.ResponseWriter, r *http.Request) {
 	type Page struct {
-		State   string
-		Vehicle string
+		Plate string
+		State string
 	}
-	body := Page{}
 	r.ParseForm()
-
-	if s := r.Form.Get("vehicle"); s != "" {
-		state, vehicle, _ := strings.Cut(strings.ToUpper(strings.TrimSpace(s)), ":")
-		body.Vehicle = vehicle
-		body.State = state
+	body := Page{
+		Plate: r.Form.Get("plate"),
+		State: r.Form.Get("state"),
+	}
+	if body.State == "" {
+		body.State = "NY"
 	}
 
 	t := newTemplate(a.templateFS, "vehicle.html")
