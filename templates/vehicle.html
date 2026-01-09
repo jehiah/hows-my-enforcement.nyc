@@ -334,15 +334,21 @@ const agencyLookup = {
 
 const dtFormat = new Intl.DateTimeFormat("en-US")
 const dtFormatDateTime = new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-    timeZone: "UTC",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: true,
+    timeZone: "UTC"
 })
 
 const MOVING_DATASET_ID = "57p3-pdcj"
 const MOVING_DATASET_BASE = `https://data.cityofnewyork.us/resource/${MOVING_DATASET_ID}.json`
 const MOVING_DATASET_ABOUT = "https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Year-to-Date-/57p3-pdcj/"
+const MOVING_LOOKUP_URL = "/static/violation_code_lookup_q16189a3.csv"
 const movingViolationLookup = {}
+let movingViolationLookupPromise = null
 
 dayjs.extend(dayjs_plugin_utc)
 
@@ -367,6 +373,44 @@ function resolveStateValue(value, fallback = "") {
     return normalized || (fallback ? String(fallback).trim().toUpperCase() : "")
 }
 
+function buildMovingLookupKey(lawTitle, adjCode) {
+    const normalizedTitle = (lawTitle || "").trim().toUpperCase()
+    const normalizedAdjCode = (adjCode || "").trim()
+    if (normalizedTitle === "" || normalizedAdjCode === "") {
+        return null
+    }
+    return `${normalizedTitle}::${normalizedAdjCode}`
+}
+
+function loadMovingViolationLookup() {
+    if (!movingViolationLookupPromise) {
+        movingViolationLookupPromise = fetch(MOVING_LOOKUP_URL)
+            .then(response => response.text())
+            .then(text => {
+                d3.csvParse(text).forEach(row => {
+                    const key = buildMovingLookupKey(row.LawTitle, row.AdjCode)
+                    if (key) {
+                        movingViolationLookup[key] = {
+                            lawCode: row.LawCode || "",
+                            description: row.Description || ""
+                        }
+                    }
+                })
+                return movingViolationLookup
+            })
+            .catch(err => {
+                console.error("Unable to load moving violation lookup", err)
+                return movingViolationLookup
+            })
+    }
+    return movingViolationLookupPromise
+}
+
+function getMovingViolationMetadata(lawTitle, adjCode) {
+    const key = buildMovingLookupKey(lawTitle, adjCode)
+    return key ? movingViolationLookup[key] : undefined
+}
+
 function getParkingData(query) {
     return Promise.all([
         fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2024"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`),
@@ -386,7 +430,7 @@ function getMovingViolations(plate, state) {
         filters.push(`reg_state_cd='${escapeSoqlValue(state)}'`)
     }
     const params = new URLSearchParams({
-        "$select": "evnt_key,violation_date,violation_time,chg_law_cd,violation_code,veh_category,reg_plate_num,reg_state_cd,city_nm,rpt_owning_cmd,juris_cd",
+        "$select": "violation_date,violation_time,chg_law_cd,violation_code,veh_category,reg_plate_num,reg_state_cd,city_nm,rpt_owning_cmd,juris_cd",
         "$limit": "5000",
         "$order": "violation_date DESC",
         "$where": filters.join(" AND ")
@@ -433,6 +477,8 @@ function renderMovingViolations(container, records, plate, state) {
     tr.className = "bg-dark text-light"
     tr.appendChild(document.createElement("th")).innerText = "Date"
     tr.appendChild(document.createElement("th")).innerText = "Violation"
+    tr.appendChild(document.createElement("th")).innerText = "Law Code"
+    tr.appendChild(document.createElement("th")).innerText = "Description"
     tr.appendChild(document.createElement("th")).innerText = "Vehicle"
     tr.appendChild(document.createElement("th")).innerText = "City / Command"
     tr.appendChild(document.createElement("th")).innerText = "Jurisdiction"
@@ -440,20 +486,17 @@ function renderMovingViolations(container, records, plate, state) {
     const tbody = table.appendChild(document.createElement("tbody"))
     records.forEach(row => {
         const dataRow = tbody.appendChild(document.createElement("tr"))
-        dataRow.appendChild(document.createElement("td")).innerText = row.violation_dt ? dtFormatDateTime.format(row.violation_dt) : (row.violation_date || "")
+        dataRow.appendChild(document.createElement("td")).innerText =  dtFormatDateTime.format(row.violation_dt) 
         const violationCell = dataRow.appendChild(document.createElement("td"))
-        const violationParts = []
-        if (row.chg_law_cd) {
-            violationParts.push(row.chg_law_cd)
-        }
-        if (row.violation_code) {
-            violationParts.push(row.violation_code)
-        }
-        let violationLabel = violationParts.join(" ")
-        if (movingViolationLookup[row.violation_code]) {
-            violationLabel += violationLabel ? ` - ${movingViolationLookup[row.violation_code]}` : movingViolationLookup[row.violation_code]
-        }
-        violationCell.innerText = violationLabel || "—"
+        const lookupEntry = getMovingViolationMetadata(row.chg_law_cd, row.violation_code)
+        violationCell.innerText = `${row.chg_law_cd} ${lookupEntry.lawCode ? lookupEntry.lawCode : row.violation_code}`
+
+        const lawCodeCell = dataRow.appendChild(document.createElement("td"))
+        lawCodeCell.className = "font-monospace"
+        lawCodeCell.innerText = lookupEntry && lookupEntry.lawCode ? lookupEntry.lawCode : "—"
+
+        const descriptionCell = dataRow.appendChild(document.createElement("td"))
+        descriptionCell.innerText = lookupEntry && lookupEntry.description ? lookupEntry.description : "—"
 
         const vehicleCell = dataRow.appendChild(document.createElement("td"))
         let vehicleLabel = row.reg_state_cd && row.reg_plate_num ? `${row.reg_state_cd}:${row.reg_plate_num}` : `${state}:${plate}`
@@ -531,7 +574,7 @@ function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
     }
     const queryString = `&$where=${filters.join(" AND ")}&$order=issue_date DESC`
 
-    Promise.all([getParkingData(queryString), getMovingViolations(normalizedPlate, normalizedState)])
+    Promise.all([getParkingData(queryString), getMovingViolations(normalizedPlate, normalizedState), loadMovingViolationLookup()])
     .then(([data, movingViolations]) => {
         spinner.remove()
         const parseDateTime = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L")
