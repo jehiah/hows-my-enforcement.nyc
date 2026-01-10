@@ -209,16 +209,6 @@ const FYLookup = {
     "start": parseDate("2022-07-01"),
     "end": parseDate("2023-06-30")
   },
-  "FY2022": {
-    "dataset":"pvqr-7yc4",
-    "start": parseDate("2022-07-01"),
-    "end": parseDate("2023-07-01")
-  },
-  "FY2021": {
-    "dataset":"7mxj-7a6y",
-    "start": parseDate("2021-07-01"),
-    "end": parseDate("2022-06-30")
-  }
 }
 const FY = FYLookup["FY2024"]
 
@@ -357,11 +347,7 @@ const licenseStateSelect = document.getElementById("license_state")
 const queryButton = document.getElementById("query-button")
 const reportContainer = document.getElementById("report-data")
 
-function escapeSoqlValue(value) {
-    return String(value).replace(/'/g, "''")
-}
-
-function normalizePlate(value) {
+function normalizeStateOrPlate(value) {
     if (!value) {
         return ""
     }
@@ -425,10 +411,8 @@ function getParkingData(query) {
 }
 
 function getMovingViolations(plate, state) {
-    const filters = [`upper(reg_plate_num)='${escapeSoqlValue(plate)}'`]
-    if (state) {
-        filters.push(`reg_state_cd='${escapeSoqlValue(state)}'`)
-    }
+    const filters = [`reg_plate_num='${normalizeStateOrPlate(plate)}'`]
+    filters.push(`reg_state_cd='${normalizeStateOrPlate(state)}'`)
     const params = new URLSearchParams({
         "$select": "violation_date,violation_time,chg_law_cd,violation_code,veh_category,reg_plate_num,reg_state_cd,city_nm,rpt_owning_cmd,juris_cd",
         "$limit": "5000",
@@ -518,7 +502,7 @@ function renderMovingViolations(container, records, plate, state) {
 }
 
 function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
-    const normalizedPlate = normalizePlate(plateValue)
+    const normalizedPlate = normalizeStateOrPlate(plateValue)
     if (!normalizedPlate) {
         licensePlateInput.classList.add("is-invalid")
         licensePlateInput.focus()
@@ -548,11 +532,6 @@ function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
     heading.innerText = `Parking violations for ${normalizedState}:${normalizedPlate}`
     el.appendChild(heading)
     const dateFormat = d3.utcFormat("%Y-%m-%d")
-    const end = FY.end["P"]
-    const startDate = dayjs(end).utcOffset(0).date(1).subtract(11, 'month').toDate()
-    const rangeLabel = el.appendChild(document.createElement("p"))
-    rangeLabel.className = "text-muted"
-    rangeLabel.innerText = `${dateFormat(startDate)} - ${dateFormat(end)}`
 
     const spinner = document.createElement("div")
     spinner.className = "spinner-border m-5"
@@ -561,15 +540,13 @@ function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
     el.appendChild(spinner)
 
     const filters = [
-        `issue_date between '${dateFormat(startDate)}T00:00:00' and '${dateFormat(end)}T23:59:59'`,
-        `upper(plate_id)='${escapeSoqlValue(normalizedPlate)}'`
+        `plate_id='${normalizedPlate}'`
     ]
     const displayFilters = [
-        `issue_date between ${dateFormat(startDate)} and ${dateFormat(end)}`,
-        `upper(plate_id)='${normalizedPlate}'`
+        `plate_id='${normalizedPlate}'`
     ]
     if (normalizedState) {
-        filters.push(`registration_state='${escapeSoqlValue(normalizedState)}'`)
+        filters.push(`registration_state='${normalizedState}'`)
         displayFilters.push(`registration_state='${normalizedState}'`)
     }
     const queryString = `&$where=${filters.join(" AND ")}&$order=issue_date DESC`
@@ -601,7 +578,6 @@ function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
 
         const seenSummons = {}
         const filtered = data.filter(d => {
-            if (d.issue_date < startDate || d.issue_date > end) { return false }
             const key = d.summons_number + ' ' +  d.violation_code
             if (seenSummons[key]) { return false }
             seenSummons[key] = true
@@ -676,7 +652,7 @@ function bootstrap() {
     const defaultState = resolveStateValue(licenseStateSelect.dataset.defaultState || "NY", "NY") || "NY"
     licenseStateSelect.value = defaultState
     const params = new URLSearchParams(window.location.search)
-    const presetPlate = normalizePlate(params.get("plate"))
+    const presetPlate = normalizeStateOrPlate(params.get("plate"))
     const presetState = resolveStateValue(params.get("state"), defaultState)
     if (presetState) {
         licenseStateSelect.value = presetState
@@ -701,7 +677,7 @@ licensePlateInput.addEventListener("input", () => {
     licensePlateInput.classList.remove("is-invalid")
 })
 licenseStateSelect.addEventListener("change", () => {
-    if (normalizePlate(licensePlateInput.value)) {
+    if (normalizeStateOrPlate(licensePlateInput.value)) {
         handleSearch(true)
     }
 })
