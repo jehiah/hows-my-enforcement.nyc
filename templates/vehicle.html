@@ -50,6 +50,15 @@
     .table>thead>tr>th:first-child, .table>tbody>tr>td:first-child {
         padding-left: .5rem;
     }
+    h3 {
+    color: #666;
+    font-family: ui-serif;
+    text-transform: uppercase;
+    font-size: 1.25em;
+    border-bottom: 1px solid #666;
+    background-color: #f9f9f9;
+    margin-bottom:0;
+}
 
     .agency { display: none;}
     @media (min-width: 768px) { 
@@ -166,7 +175,7 @@
                 </select>
                 <button id="query-button" type="button" class="btn btn-info">Search</button>
             </div>
-            <p class="text-muted small">Enter the vehicle plate and state to see recent parking activity and NYPD moving violations for that plate.</p>
+            <p class="text-muted small">Enter the vehicle plate and state to see parking and camera violations and NYPD moving violations (B Summons) for that plate.</p>
         </div>
     </div>
 
@@ -183,6 +192,7 @@
             <p>Data from NYC Open Data:
                 <a href="https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89/about_data">Open Parking and Camera Violations</a>
                 <a href="https://data.cityofnewyork.us/browse?Data-Collection_Data-Collection=DOF+Parking+Violations+Issued&q=&sortBy=alpha&utf8=%E2%9C%93&page=1&pageSize=20">Parking Violations Issued by Fiscal Year</a>
+                <a href="https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Historic-/bme5-7ty4/about_data">Moving Violation B Summons (Historic)</a>.
                 <a href="https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Year-to-Date-/57p3-pdcj/">Moving Violation B Summons Year to Date</a>.
             </p>
         </footer>
@@ -333,8 +343,10 @@ const dtFormatDateTime = new Intl.DateTimeFormat("en-US", {
     timeZone: "UTC"
 })
 
-const MOVING_DATASET_ID = "57p3-pdcj"
-const MOVING_DATASET_BASE = `https://data.cityofnewyork.us/resource/${MOVING_DATASET_ID}.json`
+const MOVING_DATASET_CURRENTYEAR_ID = "57p3-pdcj"
+const MOVING_DATASET_HISTORIC_ID = "bme5-7ty4"
+const MOVING_DATASET_CURRENTYEAR_BASE = `https://data.cityofnewyork.us/resource/${MOVING_DATASET_CURRENTYEAR_ID}.json`
+const MOVING_DATASET_HISTORIC_BASE = `https://data.cityofnewyork.us/resource/${MOVING_DATASET_HISTORIC_ID}.json`
 const MOVING_DATASET_ABOUT = "https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Year-to-Date-/57p3-pdcj/"
 const MOVING_LOOKUP_URL = "/static/violation_code_lookup_q16189a3.csv"
 const movingViolationLookup = {}
@@ -397,7 +409,12 @@ function getMovingViolationMetadata(lawTitle, adjCode) {
     return key ? movingViolationLookup[key] : undefined
 }
 
-function getParkingData(query) {
+function getParkingData(plate, state) {
+    const filters = [
+        `plate_id='${plate}'`,
+        `registration_state='${state}'`
+    ]
+    const query = `&$where=${filters.join(" AND ")}`
     return Promise.all([
         fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2024"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`),
         fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2023"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`)
@@ -416,28 +433,111 @@ function getMovingViolations(plate, state) {
     const params = new URLSearchParams({
         "$select": "violation_date,violation_time,chg_law_cd,violation_code,veh_category,reg_plate_num,reg_state_cd,city_nm,rpt_owning_cmd,juris_cd",
         "$limit": "5000",
-        "$order": "violation_date DESC",
         "$where": filters.join(" AND ")
     })
-    return fetch(`${MOVING_DATASET_BASE}?${params.toString()}`).then(response => response.json())
+    const query = params.toString()
+    return Promise.all([
+        fetch(`${MOVING_DATASET_CURRENTYEAR_BASE}?${query}`).then(response => response.json()),
+        fetch(`${MOVING_DATASET_HISTORIC_BASE}?${query}`).then(response => response.json())
+    ]).then(([current, historic]) => {
+        const currentArray = Array.isArray(current) ? current : []
+        const historicArray = Array.isArray(historic) ? historic : []
+        return currentArray.concat(historicArray)
+    })
 }
+
+function renderParkingViolations(container, records, plate, state) {
+    const parseDateTime = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L")
+    const parseTime = d3.utcParse("%I%M%p")
+    const dtFormatHour = new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        minute: "numeric",
+        hour12: true,
+        timeZone: "UTC",
+    })
+    records.forEach(d => {
+        d.issue_date = parseDateTime(d.issue_date)
+        d.count = 1
+        const violation_time = parseTime(d.violation_time + "M")
+        if (violation_time) {
+            d.issue_date.setUTCHours(violation_time.getUTCHours())
+            d.issue_date.setUTCMinutes(violation_time.getUTCMinutes())
+            d.violation_time = dtFormatHour.format(d.issue_date)
+        }
+    })
+
+    const seenSummons = new Set()
+    const filtered = records.filter(d => {
+        const key = d.summons_number + ' ' +  d.violation_code
+        if (seenSummons.has(key)) { return false }
+        seenSummons.add(key)
+        return true
+    })
+
+    const heading = container.appendChild(document.createElement("h3"))
+    heading.innerText = "Parking and Camera Violations"
+
+    if (filtered.length === 0) {
+        const empty = document.createElement("p")
+        empty.className = "summary"
+        empty.innerText = `No parking or camera violations found.`
+        container.appendChild(empty)
+        return
+    }
+
+
+
+    filtered.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
+
+    const table = container.appendChild(document.createElement("table"))
+    table.className = "table table-sm table-xsm table-striped mb-2 p-2"
+    const thead = table.appendChild(document.createElement("thead"))
+    const headerRow = thead.appendChild(document.createElement("tr"))
+    headerRow.className = "bg-dark text-light"
+    headerRow.appendChild(document.createElement("th")).innerText = "Date"
+    headerRow.appendChild(document.createElement("th")).innerText = "Summons"
+    headerRow.appendChild(document.createElement("th")).innerText = "License"
+    headerRow.appendChild(document.createElement("th")).innerText = "Location"
+    const agencyCell = headerRow.appendChild(document.createElement("th"))
+    agencyCell.className =  "agency"
+    agencyCell.innerText = "Agency"
+    headerRow.appendChild(document.createElement("th")).innerText = "Violation"
+
+    const tbody = table.appendChild(document.createElement("tbody"))
+    filtered.forEach(d => {
+        const tr = tbody.appendChild(document.createElement("tr"))
+        tr.className = nonParkingViolations.has(d.violation_code) ? "non-parking-violation" : "parking-violation"
+        tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time
+        const summonsCell = tr.appendChild(document.createElement("td"))
+        summonsCell.className = "summons font-monospace"
+        const a = summonsCell.appendChild(document.createElement("a"))
+        a.href = "/summons?" + (new URLSearchParams({"number": d.summons_number})).toString()
+        a.rel = "nofollow"
+        a.innerText = d.summons_number
+
+        const licenseCell = tr.appendChild(document.createElement("td"))
+        licenseCell.className = "font-monospace"
+        licenseCell.innerText = d.registration_state + ":" + d.plate_id
+        tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street === "" ? "" : " @ " + d.intersecting_street)
+        const agencyCellRow = tr.appendChild(document.createElement("td"))
+        agencyCellRow.className = "agency"
+        agencyCellRow.innerText = agencyLookup[d.issuing_agency]
+        tr.appendChild(document.createElement("td")).innerText = ViolationCodes[d.violation_code]
+    })
+    container.appendChild(table)
+
+}
+
 
 function renderMovingViolations(container, records, plate, state) {
     const section = container.appendChild(document.createElement("div"))
     section.className = "mt-4"
     const heading = section.appendChild(document.createElement("h3"))
     heading.innerText = "Moving violations (B Summons)"
-    const dataSource = section.appendChild(document.createElement("p"))
-    dataSource.className = "text-muted small"
-    dataSource.appendChild(document.createTextNode("Data from "))
-    const link = dataSource.appendChild(document.createElement("a"))
-    link.href = MOVING_DATASET_ABOUT
-    link.innerText = "Moving Violation B Summons Year to Date"
-    dataSource.appendChild(document.createTextNode("."))
     if (records.length === 0) {
         const empty = section.appendChild(document.createElement("p"))
         empty.className = "summary"
-        empty.innerText = `No moving violations found for ${state}:${plate}.`
+        empty.innerText = `No moving violations found.`
         return
     }
 
@@ -499,20 +599,19 @@ function renderMovingViolations(container, records, plate, state) {
         dataRow.appendChild(document.createElement("td")).innerText = cityParts.length ? cityParts.join(" • ") : "—"
         dataRow.appendChild(document.createElement("td")).innerText = row.juris_cd || "—"
     })
+
 }
 
 function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
     const normalizedPlate = normalizeStateOrPlate(plateValue)
-    if (!normalizedPlate) {
+    const normalizedState = normalizeStateOrPlate(stateValue)
+    if (!normalizedPlate ) {
         licensePlateInput.classList.add("is-invalid")
         licensePlateInput.focus()
         return
     }
-    const fallbackState = resolveStateValue(licenseStateSelect.dataset.defaultState || "NY", "NY") || "NY"
-    const normalizedState = resolveStateValue(stateValue, fallbackState)
 
     licensePlateInput.value = normalizedPlate
-    licenseStateSelect.value = normalizedState
     licensePlateInput.classList.remove("is-invalid")
 
     if (updateHistory) {
@@ -526,116 +625,23 @@ function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
 
     reportContainer.innerHTML = ''
     const el = document.createElement("div")
-    el.className = "col-12 mb-2 py-2 bg-white"
+    el.className = "col-12 mt-4 mb-2 py-2 bg-white"
     reportContainer.appendChild(el)
     const heading = document.createElement("h2")
-    heading.innerText = `Parking violations for ${normalizedState}:${normalizedPlate}`
+    heading.innerText = `Violations for ${normalizedState}:${normalizedPlate}`
     el.appendChild(heading)
     const dateFormat = d3.utcFormat("%Y-%m-%d")
 
     const spinner = document.createElement("div")
     spinner.className = "spinner-border m-5"
     spinner.setAttribute("role", "status")
-    spinner.setAttribute("aria-label", "Loading parking violations")
+    spinner.setAttribute("aria-label", "Searching Parking Violations, Camera Violations, Moving (B Summons) Violations")
     el.appendChild(spinner)
 
-    const filters = [
-        `plate_id='${normalizedPlate}'`
-    ]
-    const displayFilters = [
-        `plate_id='${normalizedPlate}'`
-    ]
-    if (normalizedState) {
-        filters.push(`registration_state='${normalizedState}'`)
-        displayFilters.push(`registration_state='${normalizedState}'`)
-    }
-    const queryString = `&$where=${filters.join(" AND ")}&$order=issue_date DESC`
-
-    Promise.all([getParkingData(queryString), getMovingViolations(normalizedPlate, normalizedState), loadMovingViolationLookup()])
-    .then(([data, movingViolations]) => {
+    Promise.all([getParkingData(normalizedPlate, normalizedState), getMovingViolations(normalizedPlate, normalizedState), loadMovingViolationLookup()])
+    .then(([parkingViolations, movingViolations]) => {
         spinner.remove()
-        const parseDateTime = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L")
-        const parseTime = d3.utcParse("%I%M%p")
-        const dtFormatHour = new Intl.DateTimeFormat("en-US", {
-            hour: "numeric",
-            minute: "numeric",
-            hour12: true,
-            timeZone: "UTC",
-        })
-        if (data.length === 100000) {
-            alert("⚠️ The Open Data query returned the maximum results. Data may be truncated. Narrow the timeframe for complete results.")
-        }
-        data.forEach(d => {
-            d.issue_date = parseDateTime(d.issue_date)
-            d.count = 1
-            const violation_time = parseTime(d.violation_time + "M")
-            if (violation_time) {
-                d.issue_date.setUTCHours(violation_time.getUTCHours())
-                d.issue_date.setUTCMinutes(violation_time.getUTCMinutes())
-                d.violation_time = dtFormatHour.format(d.issue_date)
-            }
-        })
-
-        const seenSummons = {}
-        const filtered = data.filter(d => {
-            const key = d.summons_number + ' ' +  d.violation_code
-            if (seenSummons[key]) { return false }
-            seenSummons[key] = true
-            return true
-        })
-
-        if (filtered.length === 0) {
-            const empty = document.createElement("p")
-            empty.className = "summary"
-            empty.innerText = `No parking violations found for ${normalizedState}:${normalizedPlate} between ${dateFormat(startDate)} and ${dateFormat(end)}.`
-            el.appendChild(empty)
-            renderMovingViolations(el, movingViolations, normalizedPlate, normalizedState)
-            return
-        }
-
-        filtered.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
-
-        const debugQuery = el.appendChild(document.createElement("div"))
-        debugQuery.className = "query mb-2 lh-sm"
-        debugQuery.innerHTML = displayFilters.map(d => `<code>${d}</code><br>`).join("\n")
-
-
-        const table = el.appendChild(document.createElement("table"))
-        table.className = "table table-sm table-xsm table-striped mb-2 p-2"
-        const thead = table.appendChild(document.createElement("thead"))
-        const headerRow = thead.appendChild(document.createElement("tr"))
-        headerRow.className = "bg-dark text-light"
-        headerRow.appendChild(document.createElement("th")).innerText = "Date"
-        headerRow.appendChild(document.createElement("th")).innerText = "Summons"
-        headerRow.appendChild(document.createElement("th")).innerText = "License"
-        headerRow.appendChild(document.createElement("th")).innerText = "Location"
-        const agencyCell = headerRow.appendChild(document.createElement("th"))
-        agencyCell.className =  "agency"
-        agencyCell.innerText = "Agency"
-        headerRow.appendChild(document.createElement("th")).innerText = "Violation"
-
-        const tbody = table.appendChild(document.createElement("tbody"))
-        filtered.forEach(d => {
-            const tr = tbody.appendChild(document.createElement("tr"))
-            tr.className = nonParkingViolations.has(d.violation_code) ? "non-parking-violation" : "parking-violation"
-            tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time
-            const summonsCell = tr.appendChild(document.createElement("td"))
-            summonsCell.className = "summons font-monospace"
-            const a = summonsCell.appendChild(document.createElement("a"))
-            a.href = "/summons?" + (new URLSearchParams({"number": d.summons_number})).toString()
-            a.rel = "nofollow"
-            a.innerText = d.summons_number
-
-            const licenseCell = tr.appendChild(document.createElement("td"))
-            licenseCell.className = "font-monospace"
-            licenseCell.innerText = d.registration_state + ":" + d.plate_id
-            tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street === "" ? "" : " @ " + d.intersecting_street)
-            const agencyCellRow = tr.appendChild(document.createElement("td"))
-            agencyCellRow.className = "agency"
-            agencyCellRow.innerText = agencyLookup[d.issuing_agency]
-            tr.appendChild(document.createElement("td")).innerText = ViolationCodes[d.violation_code]
-        })
-        el.appendChild(table)
+        renderParkingViolations(el, parkingViolations, normalizedPlate, normalizedState)
         renderMovingViolations(el, movingViolations, normalizedPlate, normalizedState)
     })
     .catch(err => {
