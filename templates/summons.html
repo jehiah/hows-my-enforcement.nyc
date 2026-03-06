@@ -271,11 +271,12 @@ function fetchData(n) {
         openDataDownload.href = openDataSourceURL
         openDataDownload.innerText = "🗄️ Open Parking and Camera Violations (JSON)"
 
+        // TODO: identify the fiscal year
         const fyDataURL = "https://data.cityofnewyork.us/resource/pvqr-7yc4.json?summons_number=" + encodeURIComponent(n)
         caption.appendChild(document.createElement('br'))
         openDataDownload = caption.appendChild(document.createElement('a'))
         openDataDownload.href = fyDataURL
-        openDataDownload.innerText = "🗄️ FY 2024-2025 Data (JSON)"
+        openDataDownload.innerText = "🗄️ FY 2026 Data (JSON)"
 
         el.appendChild(table)
 

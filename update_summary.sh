@@ -1,5 +1,5 @@
 
-echo "querying FY 2023-2024 stats"
+echo "querying FY 2026 data stats"
 DATASET=pvqr-7yc4
 # curl 'https://data.cityofnewyork.us/resource/pvqr-7yc4.json?$select=issuing_agency,issue_date,count(*)+as+number_violations&$where=issuing_agency+in+('T','P','S')&$group=issuing_agency,issue_date&$having=number_violations+>+50&$limit=2000' > temp.json
 

@@ -132,36 +132,9 @@
     // dayjs.extend(utc)
     import FYCalendar from "./static/fy_calendar.js"
     import Punchcard from "./static/punchcard.js"
+    import {FYLookup} from "./static/fy_lookup.js"
 
-
-    const parseDate = d3.utcParse("%Y-%m-%d")
-    const FYLookup = {
-      "FY2024": {
-        "dataset":"pvqr-7yc4", 
-        "start": parseDate("2023-07-01"),
-        "end": {
-            "P":parseDate("2025-11-11"),
-            "T":parseDate("2025-11-25"),
-            "S":parseDate("2025-11-26")
-        }
-      },
-      "FY2023": {
-        "dataset":"869v-vr48", 
-        "start": parseDate("2022-07-01"),
-        "end": parseDate("2023-06-30")
-      },
-      "FY2022": {
-        "dataset":"pvqr-7yc4",
-        "start": parseDate("2022-07-01"),
-        "end": parseDate("2023-07-01")
-      },
-      "FY2021": {
-        "dataset":"7mxj-7a6y",
-        "start": parseDate("2021-07-01"),
-        "end": parseDate("2022-06-30")
-      }
-    }
-    const FY = FYLookup["FY2024"]
+    const FY = FYLookup["FY2026"]
 
     const ViolationCodes = {
         "1":"FAILURE TO DISPLAY BUS PERMIT",
@@ -285,10 +258,9 @@ const dtFormat = new Intl.DateTimeFormat("en-US");
 
 function getData(query) {
     return Promise.all([
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2024"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
-    fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2023"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
-    ]).then(results => Promise.all(results.map(r => r.text())))
-    .then(results => {
+        fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2026"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
+        fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2025"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
+    ]).then(results => {
         const d1 = d3.csvParse(results[0])
         const d2 = d3.csvParse(results[1])
         d1.push(...d2)
@@ -336,7 +308,7 @@ function queryNYCOpenData(precinct) {
     el.appendChild(spinner)
 
     let filters = [
-       `issue_date between '${dateFormat(startDate)}T00:00:00' and '${dateFormat(end)}T23:59:59'`
+    //    `issue_date between '${dateFormat(startDate)}T00:00:00' and '${dateFormat(end)}T23:59:59'`
     ];
     let displayFilters = [
       `issue_date between ${dateFormat(startDate)} and ${dateFormat(end)}`,
@@ -344,14 +316,21 @@ function queryNYCOpenData(precinct) {
 
     filters.push(`violation_precinct = ${precinct}`)
     displayFilters.push(`violation_precinct = ${precinct}`)
-    filters.push(`issuing_agency='${issuingAgency}'`)
-    displayFilters.push(`issuing_agency='${issuingAgency}' // ${agencyLookup[issuingAgency]}`)
+    if (issuingAgency == 'P') {
+        // use P or N; some manual entries seem to now be under N but are still police department
+        // filters.push(`(issuing_agency = 'P' OR issuing_agency = 'N')`)
+        displayFilters.push(`issuing_agency = 'P' OR issuing_agency = 'N'`)
+    } else {
+        // filters.push(`issuing_agency='${issuingAgency}'`)
+        displayFilters.push(`issuing_agency='${issuingAgency}' // ${agencyLookup[issuingAgency]}`)
+    }
     const queryString = `&$where=${filters.join(" AND ")}`
 
 
     getData(queryString).then(function(data) {
         // parse date strings to Date objects
         const parseDate = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L");
+        const parseYMD = d3.utcParse("%Y%m%d");
         const parseTime = d3.utcParse("%I%M%p");
         const dtFormatHour = new Intl.DateTimeFormat("en-US", {
             hour: "numeric",
@@ -364,9 +343,12 @@ function queryNYCOpenData(precinct) {
             alert("⚠️ The Open Data Query returned the maximum results. Data is truncated. Narrow the street selection for complete results.")
         }
         data.forEach(function(d) {
-            d.issue_date = parseDate(d.issue_date);
+            if (d.issue_date.includes("-")) {
+                d.issue_date = parseDate(d.issue_date);
+            } else {
+                d.issue_date = parseYMD(d.issue_date);
+            }
             d.count = 1
-            // d.issue_date_dayonly = parseDate(d.issue_date); // day granularity (no time component)
 
             let violation_time = parseTime(d.violation_time + "M")
             if (violation_time != null ) {

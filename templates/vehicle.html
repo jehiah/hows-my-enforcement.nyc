@@ -202,25 +202,9 @@
 
 
 <script type="module">
-
+import {FYLookup} from "./static/fy_lookup.js"
 const parseDate = d3.utcParse("%Y-%m-%d")
-const FYLookup = {
-  "FY2024": {
-    "dataset":"pvqr-7yc4", 
-    "start": parseDate("2023-07-01"),
-    "end": {
-        "P":parseDate("2025-05-13"),
-        "T":parseDate("2025-05-17"),
-        "S":parseDate("2025-05-29")
-    }
-  },
-  "FY2023": {
-    "dataset":"869v-vr48", 
-    "start": parseDate("2022-07-01"),
-    "end": parseDate("2023-06-30")
-  },
-}
-const FY = FYLookup["FY2024"]
+const FY = FYLookup["FY2026"]
 
 const ViolationCodes = {
     "1":"FAILURE TO DISPLAY BUS PERMIT",
@@ -330,6 +314,7 @@ const agencyLookup = {
     "T": "Traffic",
     "S": "Sanitation",
     "K": "Parks",
+    "V": "DOT"
 }
 
 const dtFormat = new Intl.DateTimeFormat("en-US")
@@ -416,8 +401,8 @@ function getParkingData(plate, state) {
     ]
     const query = `&$where=${filters.join(" AND ")}`
     return Promise.all([
-        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2024"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`),
-        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2023"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`)
+        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2026"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`),
+        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2025"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`)
     ])
     .then(results => Promise.all(results.map(r => r.text())))
     .then(([current, prior]) => {
@@ -448,6 +433,7 @@ function getMovingViolations(plate, state) {
 
 function renderParkingViolations(container, records, plate, state) {
     const parseDateTime = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L")
+    const parseYMD = d3.utcParse("%Y%m%d")
     const parseTime = d3.utcParse("%I%M%p")
     const dtFormatHour = new Intl.DateTimeFormat("en-US", {
         hour: "numeric",
@@ -456,7 +442,11 @@ function renderParkingViolations(container, records, plate, state) {
         timeZone: "UTC",
     })
     records.forEach(d => {
-        d.issue_date = parseDateTime(d.issue_date)
+        if (d.issue_date.includes("-")) {
+            d.issue_date = parseDateTime(d.issue_date)
+        } else {
+            d.issue_date = parseYMD(d.issue_date)
+        }
         d.count = 1
         const violation_time = parseTime(d.violation_time + "M")
         if (violation_time) {
@@ -521,7 +511,7 @@ function renderParkingViolations(container, records, plate, state) {
         tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street === "" ? "" : " @ " + d.intersecting_street)
         const agencyCellRow = tr.appendChild(document.createElement("td"))
         agencyCellRow.className = "agency"
-        agencyCellRow.innerText = agencyLookup[d.issuing_agency]
+        agencyCellRow.innerText = agencyLookup[d.issuing_agency] || d.issuing_agency
         tr.appendChild(document.createElement("td")).innerText = ViolationCodes[d.violation_code]
     })
     container.appendChild(table)
