@@ -175,7 +175,7 @@
                 </select>
                 <button id="query-button" type="button" class="btn btn-info">Search</button>
             </div>
-            <p class="text-muted small">Enter the vehicle plate and state to see parking and camera violations and NYPD moving violations (B Summons) for that plate.</p>
+            <p class="text-muted small">Enter the vehicle plate and state to see parking and camera violations, NYPD moving violations (B Summons), and DOF Scofftow boot or tow cases for that plate.</p>
         </div>
     </div>
 
@@ -194,6 +194,7 @@
                 <a href="https://data.cityofnewyork.us/browse?Data-Collection_Data-Collection=DOF+Parking+Violations+Issued&q=&sortBy=alpha&utf8=%E2%9C%93&page=1&pageSize=20">Parking Violations Issued by Fiscal Year</a>
                 <a href="https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Historic-/bme5-7ty4/about_data">Moving Violation B Summons (Historic)</a>.
                 <a href="https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Year-to-Date-/57p3-pdcj/">Moving Violation B Summons Year to Date</a>.
+                <a href="https://data.cityofnewyork.us/City-Government/DOF-Scofftow-Case-Information/qmh3-uvgq/about_data">DOF Scofftow Case Information</a>.
             </p>
         </footer>
     </div>
@@ -306,15 +307,17 @@ const ViolationCodes = {
     "99":"OTHER"
 }
 const nonParkingViolations = new Set([
-    "3", "7", "8", "29", "33", "36", "41", "54", "70","71", "72", "73", "74", "75", "76", "80", "82", "83", "84", "87", "88", "91", "97", "99"
+    "3", "5", "7", "8", "12", "29", "33", "36", "41", "54", "70", "71", "72", "73", "74", 
+    "75", "76", "80", "82", "83", "84", "87", "88", "91", "97", "99"
 ])
 
 const agencyLookup = {
-    "P": "Police Department",
+    "P": "NYPD",
     "T": "Traffic",
     "S": "Sanitation",
     "K": "Parks",
-    "V": "DOT"
+    "V": "DOT",
+    "M": "MTA"
 }
 
 const dtFormat = new Intl.DateTimeFormat("en-US")
@@ -327,12 +330,18 @@ const dtFormatDateTime = new Intl.DateTimeFormat("en-US", {
     hour12: true,
     timeZone: "UTC"
 })
+const currencyFormat = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD"
+})
 
 const MOVING_DATASET_CURRENTYEAR_ID = "57p3-pdcj"
 const MOVING_DATASET_HISTORIC_ID = "bme5-7ty4"
 const MOVING_DATASET_CURRENTYEAR_BASE = `https://data.cityofnewyork.us/resource/${MOVING_DATASET_CURRENTYEAR_ID}.json`
 const MOVING_DATASET_HISTORIC_BASE = `https://data.cityofnewyork.us/resource/${MOVING_DATASET_HISTORIC_ID}.json`
 const MOVING_DATASET_ABOUT = "https://data.cityofnewyork.us/Public-Safety/Moving-Violation-B-Summons-Year-to-Date-/57p3-pdcj/"
+const SCOFFTOW_DATASET_ID = "qmh3-uvgq"
+const SCOFFTOW_DATASET_BASE = `https://data.cityofnewyork.us/resource/${SCOFFTOW_DATASET_ID}.json`
 const MOVING_LOOKUP_URL = "/static/violation_code_lookup_q16189a3.csv"
 const movingViolationLookup = {}
 let movingViolationLookupPromise = null
@@ -394,6 +403,14 @@ function getMovingViolationMetadata(lawTitle, adjCode) {
     return key ? movingViolationLookup[key] : undefined
 }
 
+function formatCurrency(value) {
+    if (value === undefined || value === null || value === "") {
+        return "—"
+    }
+    const numericValue = Number(value)
+    return Number.isFinite(numericValue) ? currencyFormat.format(numericValue) : String(value)
+}
+
 function getParkingData(plate, state) {
     const filters = [
         `plate_id='${plate}'`,
@@ -429,6 +446,18 @@ function getMovingViolations(plate, state) {
         const historicArray = Array.isArray(historic) ? historic : []
         return currentArray.concat(historicArray)
     })
+}
+
+function getScofftowCases(plate, state) {
+    const params = new URLSearchParams({
+        "$select": "case_number,case_status,plate,state,type,judgment_amount,boot_date,tow_y_n,tow_date,redeemed_y_n,redemption_date,total_amount_owed,total_amount_collected,auctioned_y_n,auction_date,auction_amount",
+        "$limit": "5000",
+        "$order": "boot_date DESC, case_number DESC",
+        "$where": [`plate='${normalizeStateOrPlate(plate)}'`, `state='${normalizeStateOrPlate(state)}'`, "(boot_date IS NOT NULL OR tow_y_n='Y')"].join(" AND ")
+    })
+    return fetch(`${SCOFFTOW_DATASET_BASE}?${params.toString()}`)
+        .then(response => response.json())
+        .then(records => Array.isArray(records) ? records : [])
 }
 
 function renderParkingViolations(container, records, plate, state) {
@@ -592,6 +621,96 @@ function renderMovingViolations(container, records, plate, state) {
 
 }
 
+function renderScofftowCases(container, records, plate, state) {
+    const section = container.appendChild(document.createElement("div"))
+    section.className = "mt-4"
+    const heading = section.appendChild(document.createElement("h3"))
+    heading.innerText = "Scofftow boot / tow cases"
+
+    if (records.length === 0) {
+        const empty = section.appendChild(document.createElement("p"))
+        empty.className = "summary"
+        empty.innerText = "No Scofftow boot or tow cases found."
+        return
+    }
+
+    records.forEach(row => {
+        row.boot_dt = row.boot_date ? parseDate(row.boot_date) : null
+        row.redemption_dt = row.redemption_date ? parseDate(row.redemption_date) : null
+        row.tow_dt = row.tow_date ? parseDate(row.tow_date) : null
+        row.auction_dt = row.auction_date ? parseDate(row.auction_date) : null
+    })
+    records.sort((a, b) => d3.descending(a.boot_dt || a.tow_dt || 0, b.boot_dt || b.tow_dt || 0))
+
+    const table = section.appendChild(document.createElement("table"))
+    table.className = "table table-sm table-xsm table-striped mb-2 p-2"
+    const thead = table.appendChild(document.createElement("thead"))
+    const tr = thead.appendChild(document.createElement("tr"))
+    tr.className = "bg-dark text-light"
+    tr.appendChild(document.createElement("th")).innerText = "Booted"
+    tr.appendChild(document.createElement("th")).innerText = "Case"
+    tr.appendChild(document.createElement("th")).innerText = "Vehicle"
+    tr.appendChild(document.createElement("th")).innerText = "Status"
+    tr.appendChild(document.createElement("th")).innerText = "Tow"
+    tr.appendChild(document.createElement("th")).innerText = "Redeemed"
+    tr.appendChild(document.createElement("th")).innerText = "Judgment / Collected"
+    tr.appendChild(document.createElement("th")).innerText = "Amount Owed"
+    tr.appendChild(document.createElement("th")).innerText = "Auction"
+
+    const tbody = table.appendChild(document.createElement("tbody"))
+    records.forEach(row => {
+        const dataRow = tbody.appendChild(document.createElement("tr"))
+        dataRow.appendChild(document.createElement("td")).innerText = row.boot_dt ? dtFormat.format(row.boot_dt) : "—"
+
+        const caseCell = dataRow.appendChild(document.createElement("td"))
+        caseCell.className = "font-monospace"
+        caseCell.innerText = row.case_number || "—"
+
+        const vehicleCell = dataRow.appendChild(document.createElement("td"))
+        let vehicleLabel = row.state && row.plate ? `${row.state}:${row.plate}` : `${state}:${plate}`
+        if (row.type) {
+            vehicleLabel += ` (${row.type})`
+        }
+        vehicleCell.innerText = vehicleLabel
+
+        dataRow.appendChild(document.createElement("td")).innerText = row.case_status || "—"
+
+        const towCell = dataRow.appendChild(document.createElement("td"))
+        if (row.tow_y_n === "Y") {
+            towCell.innerText = row.tow_dt ? `Yes • ${dtFormat.format(row.tow_dt)}` : "Yes"
+        } else {
+            towCell.innerText = "No"
+        }
+
+        const redeemedCell = dataRow.appendChild(document.createElement("td"))
+        if (row.redeemed_y_n === "Y") {
+            redeemedCell.innerText = row.redemption_dt ? `Yes • ${dtFormat.format(row.redemption_dt)}` : "Yes"
+        } else {
+            redeemedCell.innerText = "No"
+        }
+
+        const pairedAmountsCell = dataRow.appendChild(document.createElement("td"))
+        pairedAmountsCell.innerText = `${formatCurrency(row.judgment_amount)} / ${formatCurrency(row.total_amount_collected)}`
+
+        const amountCell = dataRow.appendChild(document.createElement("td"))
+        amountCell.innerText = formatCurrency(row.total_amount_owed)
+
+        const auctionCell = dataRow.appendChild(document.createElement("td"))
+        if (row.auctioned_y_n === "Y") {
+            const auctionParts = ["Yes"]
+            if (row.auction_dt) {
+                auctionParts.push(dtFormat.format(row.auction_dt))
+            }
+            if (row.auction_amount !== undefined && row.auction_amount !== null && row.auction_amount !== "") {
+                auctionParts.push(formatCurrency(row.auction_amount))
+            }
+            auctionCell.innerText = auctionParts.join(" • ")
+        } else {
+            auctionCell.innerText = "No"
+        }
+    })
+}
+
 function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
     const normalizedPlate = normalizeStateOrPlate(plateValue)
     const normalizedState = normalizeStateOrPlate(stateValue)
@@ -618,21 +737,21 @@ function queryVehicleHistory(plateValue, stateValue, updateHistory = true) {
     el.className = "col-12 mt-4 mb-2 py-2 bg-white"
     reportContainer.appendChild(el)
     const heading = document.createElement("h2")
-    heading.innerText = `Violations for ${normalizedState}:${normalizedPlate}`
+    heading.innerText = `Violations and Scofftow cases for ${normalizedState}:${normalizedPlate}`
     el.appendChild(heading)
-    const dateFormat = d3.utcFormat("%Y-%m-%d")
 
     const spinner = document.createElement("div")
     spinner.className = "spinner-border m-5"
     spinner.setAttribute("role", "status")
-    spinner.setAttribute("aria-label", "Searching Parking Violations, Camera Violations, Moving (B Summons) Violations")
+    spinner.setAttribute("aria-label", "Searching parking, camera, moving, and Scofftow records")
     el.appendChild(spinner)
 
-    Promise.all([getParkingData(normalizedPlate, normalizedState), getMovingViolations(normalizedPlate, normalizedState), loadMovingViolationLookup()])
-    .then(([parkingViolations, movingViolations]) => {
+    Promise.all([getParkingData(normalizedPlate, normalizedState), getMovingViolations(normalizedPlate, normalizedState), getScofftowCases(normalizedPlate, normalizedState), loadMovingViolationLookup()])
+    .then(([parkingViolations, movingViolations, scofftowCases]) => {
         spinner.remove()
         renderParkingViolations(el, parkingViolations, normalizedPlate, normalizedState)
         renderMovingViolations(el, movingViolations, normalizedPlate, normalizedState)
+        renderScofftowCases(el, scofftowCases, normalizedPlate, normalizedState)
     })
     .catch(err => {
         spinner.remove()
