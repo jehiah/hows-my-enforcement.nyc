@@ -138,6 +138,7 @@
 <script type="module">
 const dateFormat = d3.utcFormat("%Y-%m-%d")
 const parseYMDDate = d3.utcParse("%Y%m%d")
+import {CountyLookup} from "./static/data.js"
 
 const violationLookup = {
     "NO STANDING-OFF-STREET LOT": "MTA CAMERA DOUBLE PARKING",
@@ -146,22 +147,6 @@ const violationLookup = {
     "NO STANDING-SNOW EMERGENCY": "MOBILE BUS LANE VIOLATION"
 }
 
-const countyLookup = {
-    "BX": "Bronx",
-    "Bronx": "Bronx",
-    "K": "Brooklyn",
-    "Kings": "Brooklyn",
-    "BK": "Brooklyn",
-    "NY": "Manhattan",
-    "MN": "Manhattan",
-    "QN": "Queens",
-    "Q": "Queens",
-    "Qns": "Queens",
-    "SI": "Staten Island",
-    "R": "Staten Island",
-    "Rich": "Staten Island",
-    "ST": "Staten Island"
-}
 
 function fetchData(n) {
     const Resource = "nc67-uf89" // https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89
@@ -186,8 +171,8 @@ function fetchData(n) {
         if (row.precinct == "000") {
             row.precinct = ""
         }
-        if (countyLookup[row.county]) {
-            row.county = countyLookup[row.county]
+        if (CountyLookup[row.county]) {
+            row.county = CountyLookup[row.county]
         }
         const openDataRow = row
 
@@ -348,7 +333,7 @@ function fetchData(n) {
                 txt += ` ${row.intersecting_street}`
             }
             if (row.violation_county) {
-                txt += ` ${countyLookup[row.violation_county]}`
+                txt += ` ${CountyLookup[row.violation_county]}`
             }
             locationTd.innerText = txt
         })

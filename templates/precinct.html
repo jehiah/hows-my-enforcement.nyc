@@ -128,131 +128,14 @@
 
 
 <script type="module">
-    // var utc = require('dayjs/plugin/utc')
-    // dayjs.extend(utc)
-    import FYCalendar from "./static/fy_calendar.js"
-    import Punchcard from "./static/punchcard.js"
-    import {FYLookup} from "./static/fy_lookup.js"
+// var utc = require('dayjs/plugin/utc')
+// dayjs.extend(utc)
+import FYCalendar from "./static/fy_calendar.js"
+import Punchcard from "./static/punchcard.js"
+import {FYLookup} from "./static/fy_lookup.js"
+import {ViolationCodes, NonParkingViolations, AgencyLookup} from "./static/data.js"
 
-    const FY = FYLookup["FY2026"]
-
-    const ViolationCodes = {
-        "1":"FAILURE TO DISPLAY BUS PERMIT",
-        "2":"NO OPERATOR NAM/ADD/PH DISPLAY",
-        "3":"UNAUTHORIZED PASSENGER PICK-UP",
-        "4":"BUS PARKING IN LOWER MANHATTAN",
-        "5":"BUS LANE VIOLATION",
-        "6":"OVERNIGHT TRACTOR TRAILER PKG",
-        "7":"FAILURE TO STOP AT RED LIGHT",
-        "8":"IDLING",
-        "9":"OBSTRUCTING TRAFFIC/INTERSECT",
-        "10":"NO STOPPING-DAY/TIME LIMITS",
-        "11":"NO STANDING-HOTEL LOADING",
-        "12":"MOBILE BUS LANE VIOLATION", // "NO STANDING-SNOW EMERGENCY"
-        "13":"NO STANDING-TAXI STAND",
-        "14":"NO STANDING-DAY/TIME LIMITS",
-        "15":"MTA CAMERA DOUBLE PARKING", // "NO STANDING-OFF-STREET LOT",
-        "16":"NO STANDING-EXC. TRUCK LOADING",
-        "17":"NO STANDING-EXC. AUTH. VEHICLE",
-        "18":"NO STANDING-BUS LANE",
-        "19":"NO STANDING-BUS STOP",
-        "20":"NO PARKING-DAY/TIME LIMITS",
-        "21":"NO PARKING-STREET CLEANING",
-        "22":"NO STAND TAXI/FHV RELIEF STAND",
-        "23":"NO PARKING-TAXI STAND",
-        "24":"NO PARKING-EXC. AUTH. VEHICLE",
-        "25":"NO STANDING-COMMUTER VAN STOP",
-        "26":"NO STANDING-FOR HIRE VEH STND",
-        "27":"NO PARKING-EXC. DSBLTY PERMIT",
-        "28":"OVERTIME STANDING DP",
-        "29":"ALTERING INTERCITY BUS PERMIT",
-        "30":"NO STOP/STANDNG EXCEPT PAS P/U",
-        "31":"NO STANDING-COMM METER ZONE",
-        "32":"OT PARKING-MISSING/BROKEN METR",
-        "33":"MISUSE PARKING PERMIT",
-        "34":"EXPIRED METER",
-        "35":"SELLING/OFFERING MCHNDSE-METER",
-        "36":"PHTO SCHOOL ZN SPEED VIOLATION",
-        "37":"EXPIRED MUNI METER",
-        "38":"FAIL TO DSPLY MUNI METER RECPT",
-        "39":"OVERTIME PKG-TIME LIMIT POSTED",
-        "40":"FIRE HYDRANT",
-        "41":"MISCELLANEOUS",
-        "42":"EXPIRED MUNI MTR-COMM MTR ZN",
-        "43":"MTA CAMERA BUS STOP", // "EXPIRED METER-COMM METER ZONE",
-        "44":"PKG IN EXC. OF LIM-COMM MTR ZN",
-        "45":"TRAFFIC LANE",
-        "46":"DOUBLE PARKING",
-        "47":"DOUBLE PARKING-MIDTOWN COMML",
-        "48":"BIKE LANE",
-        "49":"EXCAVATION-VEHICLE OBSTR TRAFF",
-        "50":"CROSSWALK",
-        "51":"SIDEWALK",
-        "52":"INTERSECTION",
-        "53":"SAFETY ZONE",
-        "54":"PCKP DSCHRGE IN PRHBTD ZONE",
-        "55":"ELEVATED/DIVIDED HIGHWAY/TUNNL",
-        "56":"DIVIDED HIGHWAY",
-        "57":"WEIGH IN MOTION VIOLATION", // "BLUE ZONE",
-        "58":"MARGINAL STREET/WATER FRONT",
-        "59":"ANGLE PARKING-COMM VEHICLE",
-        "60":"ANGLE PARKING",
-        "61":"WRONG WAY",
-        "62":"BEYOND MARKED SPACE",
-        "63":"NIGHTTIME STD/ PKG IN A PARK",
-        "64":"NO STANDING EXCP D/S",
-        "65":"OVERTIME STDG D/S",
-        "66":"DETACHED TRAILER",
-        "67":"PEDESTRIAN RAMP",
-        "68":"NON-COMPLIANCE W/ POSTED SIGN",
-        "69":"FAIL TO DISP. MUNI METER RECPT",
-        "70":"REG. STICKER-EXPIRED/MISSING",
-        "71":"INSP. STICKER-EXPIRED/MISSING",
-        "72":"INSP STICKER-MUTILATED/C'FEIT",
-        "73":"REG STICKER-MUTILATED/C'FEIT",
-        "74":"FRONT OR BACK PLATE MISSING",
-        "75":"NO MATCH-PLATE/STICKER",
-        "76":"VIN OBSCURED",
-        "77":"PARKED BUS-EXC. DESIG. AREA",
-        "78":"NGHT PKG ON RESID STR-COMM VEH",
-        "79":"UNAUTHORIZED BUS LAYOVER",
-        "80":"MISSING EQUIPMENT",
-        "81":"NO STANDING EXCP DP",
-        "82":"COMML PLATES-UNALTERED VEHICLE",
-        "83":"IMPROPER REGISTRATION",
-        "84":"PLTFRM LFTS LWRD POS COMM VEH",
-        "85":"STORAGE-3HR COMMERCIAL",
-        "86":"MIDTOWN PKG OR STD-3HR LIMIT",
-        "87":"FRAUDULENT USE PARKING PERMIT",
-        "88":"UNALTERED COMM VEH-NME/ADDRESS",
-        "89":"NO STD(EXC TRKS/GMTDST NO-TRK)",
-        "90":"VEH-SALE/WSHNG/RPRNG/DRIVEWAY",
-        "91":"VEHICLE FOR SALE(DEALERS ONLY)",
-        "92":"WASH/REPAIR VEHCL-REPAIR ONLY",
-        "93":"REMOVE/REPLACE FLAT TIRE",
-        "96":"RAILROAD CROSSING",
-        "97":"VACANT LOT",
-        "98":"OBSTRUCTING DRIVEWAY",
-        "99":"OTHER"
-    }
-    const nonParkingViolations = new Set([
-        "3", "7", "8", "29", "33", "36", "41", "54", "70","71", "72", "73", "74", "75", "76", "80", "82", "83", "84", "87", "88", "91", "97", "99"
-    ])
-
-    const agencyLookup = {
-        "P": "Police Department",
-        "T": "Traffic",
-        "S": "Sanitation",
-        "K": "Parks",
-    }
-
-    const boroughLookup = {
-        "Brooklyn": "bk",
-        "Queens": "qn",
-        "Manhattan": "ny",
-        "Bronx": "bx",
-        "Staten Island": "si",
-    }
+const FY = FYLookup["FY2026"]
 
 const dtFormat = new Intl.DateTimeFormat("en-US");
 
@@ -322,7 +205,7 @@ function queryNYCOpenData(precinct) {
         displayFilters.push(`issuing_agency = 'P' OR issuing_agency = 'N'`)
     } else {
         // filters.push(`issuing_agency='${issuingAgency}'`)
-        displayFilters.push(`issuing_agency='${issuingAgency}' // ${agencyLookup[issuingAgency]}`)
+        displayFilters.push(`issuing_agency='${issuingAgency}' // ${AgencyLookup[issuingAgency]}`)
     }
     const queryString = `&$where=${filters.join(" AND ")}`
 
@@ -370,8 +253,8 @@ function queryNYCOpenData(precinct) {
         seenSummons = null
 
         data.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
-        const parkingData = data.filter(d => !nonParkingViolations.has(d.violation_code))
-        const nonParkingData = data.filter(d => nonParkingViolations.has(d.violation_code))
+        const parkingData = data.filter(d => !NonParkingViolations.has(d.violation_code))
+        const nonParkingData = data.filter(d => NonParkingViolations.has(d.violation_code))
         // console.log("matching data", data.length, data.slice(0,10))
 
         // group data by issue_date
@@ -419,7 +302,7 @@ function queryNYCOpenData(precinct) {
         summary.className="summary"
         let summaryParagraphs = [
             `<mark>${parkingData.length}</mark> parking violations were issued`,
-            ` by <mark>${agencyLookup[issuingAgency]}</mark> in ${formatOrdinals(precinct)} Precinct`,
+            ` by <mark>${AgencyLookup[issuingAgency]}</mark> in ${formatOrdinals(precinct)} Precinct`,
             ` on <mark>${groupByDate.length}</mark> of <mark>${violationsByDay.length}</mark> days between 
           <mark>${d3.utcFormat("%b %d %Y")(startDate)}</mark> and <mark>${d3.utcFormat("%b %d %Y")(end)}</mark> 
           (<mark>${d3.format("0.1%")(groupByDate.length/violationsByDay.length)}</mark> of the days)`,
@@ -454,7 +337,7 @@ function queryNYCOpenData(precinct) {
         // TODO: use the filter not the results
         // if (groupByAgency.length > 1) {
         //     groupByAgency.sort((a, b) => d3.descending(a[1], b[1])).forEach(([agency, count]) => {
-        //         summaryParagraphs.push(`<mark>${agencyLookup[agency]}</mark> issued <mark>${count}</mark> parking violations (<mark>${d3.format("0.1%")(count/parkingData.length)}</mark>). `)
+        //         summaryParagraphs.push(`<mark>${AgencyLookup[agency]}</mark> issued <mark>${count}</mark> parking violations (<mark>${d3.format("0.1%")(count/parkingData.length)}</mark>). `)
         //     })
         // }
 
@@ -594,7 +477,7 @@ function queryNYCOpenData(precinct) {
         const tbody = table.appendChild(document.createElement("tbody"))
         data.forEach(d => {
             const tr = tbody.appendChild(document.createElement("tr"))
-            tr.className = nonParkingViolations.has(d.violation_code) ? "non-parking-violation" : "parking-violation"
+            tr.className = NonParkingViolations.has(d.violation_code) ? "non-parking-violation" : "parking-violation"
             tr.appendChild(document.createElement("td")).innerText = dtFormat.format(d.issue_date) + " " + d.violation_time // TODO format
             let cell = tr.appendChild(document.createElement("td"))
             cell.className = "summons font-monospace"
@@ -609,7 +492,7 @@ function queryNYCOpenData(precinct) {
             tr.appendChild(document.createElement("td")).innerText = d.house_number + ' ' + d.street_name + (d.intersecting_street == "" ? "":  " @ " + d.intersecting_street)
             cell = tr.appendChild(document.createElement("td"))
             cell.className = groupByAgency.length > 1 ? "agencies": "agency"
-            cell.innerText = agencyLookup[d.issuing_agency]
+            cell.innerText = AgencyLookup[d.issuing_agency]
             tr.appendChild(document.createElement("td")).innerText = ViolationCodes[d.violation_code]
         })
         el.appendChild(table)
