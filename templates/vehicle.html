@@ -76,6 +76,9 @@
     rect.cell.highlighted {
         stroke: #000;
     }
+    input[name="license_plate"] {
+        text-transform: uppercase;
+    }
 </style>
 </head>
 <body>
@@ -383,7 +386,7 @@ function renderParkingViolations(container, records, plate, state) {
     })
 
     const heading = container.appendChild(document.createElement("h3"))
-    heading.innerText = "Parking and Camera Violations"
+    heading.innerText = "Parking and Camera Violations (FY 2025 and 2026)"
 
     if (filtered.length === 0) {
         const empty = document.createElement("p")
@@ -395,7 +398,7 @@ function renderParkingViolations(container, records, plate, state) {
 
 
 
-    filtered.sort((a, b) => d3.ascending(a.issue_date, b.issue_date))
+    filtered.sort((a, b) => d3.descending(a.issue_date, b.issue_date))
 
     const table = container.appendChild(document.createElement("table"))
     table.className = "table table-sm table-xsm table-striped mb-2 p-2"
@@ -441,7 +444,7 @@ function renderMovingViolations(container, records, plate, state) {
     const section = container.appendChild(document.createElement("div"))
     section.className = "mt-4"
     const heading = section.appendChild(document.createElement("h3"))
-    heading.innerText = "Moving violations (B Summons)"
+    heading.innerText = "Moving violations (B Summons) (2025+)"
     if (records.length === 0) {
         const empty = section.appendChild(document.createElement("p"))
         empty.className = "summary"
