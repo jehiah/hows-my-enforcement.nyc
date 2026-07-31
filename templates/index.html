@@ -243,10 +243,9 @@
     function loadStreets(defaultStreets, defaultIntersections) {
         // console.log("loadStreets");
         const borough = document.getElementById("borough-select").value;
-        const DatasetID = "q2ggFL"
-        const FY="fy_2024"
+        const DatasetID = "q7vakk"
 
-        const filename = `https://storage.googleapis.com/hows-my-enforcement-nyc/data/${FY}_${DatasetID}_${boroughLookup[borough]}_intersecting_streets.tsv`
+        const filename = `https://storage.googleapis.com/hows-my-enforcement-nyc/data/fy_${DatasetID}_${boroughLookup[borough]}_intersecting_streets.tsv`
         
         // console.log("opening", filename);
 

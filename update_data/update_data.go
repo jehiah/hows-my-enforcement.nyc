@@ -106,7 +106,7 @@ order by 1, lower(street_name)
 	fmt.Printf("const DatasetID = %q\n", dthash.DateHash(now))
 
 	for _, county := range []string{"bk", "bx", "ny", "qn", "si"} {
-		fn := fmt.Sprintf("fy_2024_%s_%s_intersecting_streets.tsv", dthash.DateHash(now), county)
+		fn := fmt.Sprintf("fy_%s_%s_intersecting_streets.tsv", dthash.DateHash(now), county)
 		// log.Printf("filename %s", fn)
 		obj := gs.Object(fmt.Sprintf("data/%s", fn))
 		log.Printf("https://storage.googleapis.com/%s/%s", obj.BucketName(), obj.ObjectName())

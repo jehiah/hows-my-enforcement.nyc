@@ -7,8 +7,7 @@ Note: the dataset `FY2024` is updated in perpetuity now.
 # Query open data for date ranges
 
 1. run `./update_summary.sh` This will output the dates agencies have data through. This will also modify `precinct_data.json` to be committed
-1. update end dates for `FY2024` in `report.html`
-1. update end dates for `FY2024` in `precinct.html`
+1. update end dates in `fy_lookup.js`
 
 # Update index
 

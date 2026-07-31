@@ -234,7 +234,7 @@ function queryNYCOpenData(precinct) {
             d.count = 1
 
             let violation_time = parseTime(d.violation_time + "M")
-            if (violation_time != null ) {
+            if (violation_time != null && d.issue_date != null) {
                 d.issue_date.setUTCHours(violation_time.getUTCHours())
                 d.issue_date.setUTCMinutes(violation_time.getUTCMinutes())
                 d.violation_time = dtFormatHour.format(d.issue_date)

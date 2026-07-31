@@ -7,9 +7,9 @@ export const FYLookup = {
         "dataset": "pvqr-7yc4",
         "start": parseDate("2025-07-01"),
         "end": {
-            "P": parseDate("2026-01-14"),
-            "T": parseDate("2026-02-24"),
-            "S": parseDate("2026-02-25")
+            "P": parseDate("2026-06-17"),
+            "T": parseDate("2026-06-25"),
+            "S": parseDate("2026-06-29")
         }
     },
     "FY2025": {
