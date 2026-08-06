@@ -122,6 +122,7 @@ func (a *App) RobotsTXT(w http.ResponseWriter, r *http.Request) {
 User-agent: *
 Disallow: /summons
 Disallow: /vehicle
+Disallow: /vin
 `)
 
 }
@@ -360,6 +361,23 @@ func (a *App) Vehicle(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (a *App) Vin(w http.ResponseWriter, r *http.Request) {
+	type Page struct {
+		VIN string
+	}
+	r.ParseForm()
+	body := Page{
+		VIN: r.Form.Get("vin"),
+	}
+
+	t := newTemplate(a.templateFS, "vin.html")
+	err := t.ExecuteTemplate(w, "vin.html", body)
+	if err != nil {
+		log.Print(err)
+		a.WebInternalError500(w, "")
+	}
+}
+
 func (app *App) User(*http.Request) account.UID {
 	return account.UID("test")
 }
@@ -415,6 +433,7 @@ func main() {
 	router.HandleFunc("GET /summons", app.Summons)
 	router.HandleFunc("GET /311", app.Lookup311)
 	router.HandleFunc("GET /vehicle", app.Vehicle)
+	router.HandleFunc("GET /vin", app.Vin)
 	router.HandleFunc("GET /robots.txt", app.RobotsTXT)
 	router.HandleFunc("POST /{$}", app.IndexPost)
 	router.HandleFunc("POST /data/311", app.Lookup311Post)

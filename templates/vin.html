@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="/static/favicon_96.png">
+    <title>How is NYC Parking Enforcement?</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/d3@7.8.3/dist/d3.min.js" integrity="sha256-z9jvEmgHGEfWO4rPfEXUGKFd6UkxkavfJ0zf3qT31O4=" crossorigin="anonymous"></script>
+
+<style>
+    body {
+        background-color:#ffd900;
+    }
+    .table-xsm {
+        font-size:80%;
+    }
+    .table-xsm>:not(caption)>*>* {
+        padding: 0.1rem 0.1rem;
+    }
+    .summary {
+        line-height: 1.7rem;
+    }
+    footer {
+    text-align: center;
+    font-size: .75rem;
+    color: #999;
+    padding: 2rem 1rem;
+    }
+    footer a:link, footer a:visited {
+    color: #777;
+    }
+    footer p {
+    margin-bottom: .5rem;
+    }
+    h1 > a {
+        text-decoration: none;
+        color:inherit;
+    }
+    h1 > a:hover {
+        text-decoration: underline;
+        color:inherit;
+    }
+    .table>thead>tr>th:first-child, .table>tbody>tr>td:first-child {
+        padding-left: .5rem;
+    }
+    h3 {
+    color: #666;
+    font-family: ui-serif;
+    text-transform: uppercase;
+    font-size: 1.25em;
+    border-bottom: 1px solid #666;
+    background-color: #f9f9f9;
+    margin-bottom:0;
+}
+    input[name="vin"] {
+        text-transform: uppercase;
+    }
+</style>
+</head>
+<body>
+
+<div class="container mt-2 mt-lg-3 mt-xl-5 px-3">
+
+    <div class="row">
+        <div class="col-12 col-lg-10 col-xl-8">
+        <h1><a href="/">How is NYC Parking Enforcement?</a></h1>
+        <p class="hide-render">Is NYPD Traffic's parking enforcement consistent and rigorous on your block? <a href="/">Check</a>!</p>
+        <p class="fw-light hide-render">Enforcement of parking regulations should be consistent and rigorous.</p>
+        </div>
+    </div>
+
+    <div class="row">
+
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <span class="nav-link disabled">Search By:</span>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/">Street</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/precinct">Precinct</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/summons">Summons</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/vehicle">Vehicle</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/vin">VIN</a>
+            </li>
+        </ul>
+
+    </div>
+
+    <div class="row mt-3">
+        <div class="col-12 col-lg-8 bg-white rounded-3 pt-2">
+            <h2>Vehicle Identification Number (VIN)</h2>
+
+            <div class="input-group mb-3">
+                <input type="text" class="form-control font-monospace" name="vin" id="vin" value="{{.VIN}}" placeholder="VIN" aria-label="Vehicle identification number" maxlength="17">
+                <button id="query-button" type="button" class="btn btn-info">Search</button>
+            </div>
+            <p class="text-muted small">Enter a 17-character VIN to see New York State DMV vehicle inspection history, including pass/fail results and the inspection facility.</p>
+        </div>
+    </div>
+
+    <div id="report-data" class="row mb-5"></div>
+
+    <div class="row mb-2 text-muted fw-light">
+        <div class="col-lg-8">
+            <p>Inspection data is queried directly from the New York State Open Data portal; it reflects safety and emissions inspections performed by DMV-licensed facilities statewide, not only in NYC.</p>
+        </div>
+    </div>
+    <div class="row">
+        <footer>
+            <p>Made with ❤️ by <a href="https://jehiah.cz/">@jehiah</a>.</p>
+            <p>Data from NY State Open Data:
+                <a href="https://data.ny.gov/Transportation/Department-of-Motor-Vehicles-Vehicle-Inspections/vezn-fmmk/about_data">Department of Motor Vehicles Vehicle Inspections</a>
+                <a href="https://data.ny.gov/Transportation/Vehicle-Inspection-Stations-Across-New-York-State/2art-mint/about_data">Vehicle Inspection Stations Across New York State</a>.
+            </p>
+        </footer>
+    </div>
+
+</div>
+
+
+<script>
+
+const dtFormat = new Intl.DateTimeFormat("en-US")
+const parseDateTime = d3.utcParse("%Y-%m-%dT%H:%M:%S.%L")
+
+const INSPECTION_DATASET_ID = "vezn-fmmk"
+const FACILITY_DATASET_ID = "2art-mint"
+const INSPECTION_DATASET_BASE = `https://data.ny.gov/resource/${INSPECTION_DATASET_ID}.json`
+const FACILITY_DATASET_BASE = `https://data.ny.gov/resource/${FACILITY_DATASET_ID}.json`
+
+const INSPECTION_FIELDS = [
+    "vin", "model_year", "model_year_change", "make_code", "model_name",
+    "registration_class", "no_registration_reason", "inspection_date",
+    "inspection_expiration", "inspection_type", "dmv_facility_number",
+    "odometer_reading", "fuel_type", "fuel_type_change",
+    "vehicle_transmission_type", "hybrid", "nyma", "nyma_change",
+    "vehicle_weight_class", "nyvip_unit_number", "certified_inspector_number",
+    "inspection_certificate_number", "data_entry_method", "inspection_test_type",
+    "initial_emission_result", "emission_control_device_check", "gas_cap_result",
+    "gas_cap_replacement", "on_board_diagnostic_check", "safety_inspection_result",
+    "emissions_waiver_issued", "overall_readiness_result", "ten_day_extension_issued",
+    "wheel_removed_1", "wheel_removed_2", "wheel_removed_3", "wheel_removed_4",
+    "warning_message", "advisory_message",
+]
+
+const vinInput = document.getElementById("vin")
+const queryButton = document.getElementById("query-button")
+const reportContainer = document.getElementById("report-data")
+
+function normalizeVIN(value) {
+    if (!value) {
+        return ""
+    }
+    return String(value).trim().toUpperCase().replace(/[^A-Z0-9]/g, "")
+}
+
+function formatDate(value) {
+    if (!value) {
+        return "—"
+    }
+    const parsed = parseDateTime(value)
+    return parsed ? dtFormat.format(parsed) : "—"
+}
+
+function formatResult(value) {
+    if (!value) {
+        return {text: "—", className: "text-bg-secondary"}
+    }
+    const upper = String(value).trim().toUpperCase()
+    if (upper === "PASS") {
+        return {text: "PASS", className: "text-bg-success"}
+    }
+    if (upper === "FAIL" || upper === "REJECT") {
+        return {text: upper, className: "text-bg-danger"}
+    }
+    return {text: upper, className: "text-bg-secondary"}
+}
+
+function resultBadge(value) {
+    const {text, className} = formatResult(value)
+    const badge = document.createElement("span")
+    badge.className = "badge " + className
+    badge.innerText = text
+    return badge
+}
+
+function getInspections(vin) {
+    const params = new URLSearchParams({
+        "$select": INSPECTION_FIELDS.join(","),
+        "$where": "caseless_one_of(`vin`, '" + vin.replace(/'/g, "") + "')",
+        "$order": "inspection_date DESC",
+        "$limit": "1000",
+    })
+    return fetch(`${INSPECTION_DATASET_BASE}?${params.toString()}`).then(response => response.json())
+}
+
+function getFacilities(facilityNumbers) {
+    const unique = [...new Set(facilityNumbers.filter(Boolean))]
+    if (unique.length === 0) {
+        return Promise.resolve({})
+    }
+    const inList = unique.map(f => "'" + String(f).replace(/'/g, "") + "'").join(",")
+    const params = new URLSearchParams({
+        "$select": "facility,facility_name,facility_name_overflow,facility_street,facility_city,facility_state,facility_zip_code",
+        "$where": `facility in(${inList})`,
+        "$limit": String(unique.length),
+    })
+    return fetch(`${FACILITY_DATASET_BASE}?${params.toString()}`)
+        .then(response => response.json())
+        .then(records => {
+            const lookup = {}
+            records.forEach(rec => { lookup[rec.facility] = rec })
+            return lookup
+        })
+}
+
+function facilityLabel(facility, facilityNumber) {
+    if (!facilityNumber) {
+        return "—"
+    }
+    if (!facility) {
+        return `Facility #${facilityNumber}`
+    }
+    const nameParts = [facility.facility_name]
+    if (facility.facility_name_overflow) {
+        nameParts.push(facility.facility_name_overflow)
+    }
+    const name = nameParts.join(" ")
+    const cityParts = []
+    if (facility.facility_city) {
+        cityParts.push(facility.facility_city)
+    }
+    if (facility.facility_state) {
+        cityParts.push(facility.facility_state)
+    }
+    return cityParts.length ? `${name} (${cityParts.join(", ")})` : name
+}
+
+function renderVehicleSummary(container, record) {
+    const section = container.appendChild(document.createElement("div"))
+    section.className = "mb-3"
+    const parts = []
+    if (record.model_year || record.make_code || record.model_name) {
+        parts.push([record.model_year, record.make_code, record.model_name].filter(Boolean).join(" "))
+    }
+    if (record.registration_class) {
+        parts.push(record.registration_class)
+    }
+    if (record.fuel_type) {
+        parts.push(record.hybrid === "TRUE" ? `${record.fuel_type} HYBRID` : record.fuel_type)
+    }
+    if (record.vehicle_transmission_type) {
+        parts.push(record.vehicle_transmission_type)
+    }
+    const summary = section.appendChild(document.createElement("p"))
+    summary.className = "summary fs-5"
+    summary.innerText = parts.join(" • ")
+}
+
+function renderInspections(container, records, facilityLookup, vin) {
+    const heading = container.appendChild(document.createElement("h3"))
+    heading.innerText = "DMV Inspection History"
+
+    if (records.length === 0) {
+        const empty = container.appendChild(document.createElement("p"))
+        empty.className = "summary"
+        empty.innerText = "No DMV inspection records found for this VIN."
+        return
+    }
+
+    renderVehicleSummary(container, records[0])
+
+    const table = container.appendChild(document.createElement("table"))
+    table.className = "table table-sm table-xsm table-striped mb-2 p-2"
+    const thead = table.appendChild(document.createElement("thead"))
+    const tr = thead.appendChild(document.createElement("tr"))
+    tr.className = "bg-dark text-light"
+    tr.appendChild(document.createElement("th")).innerText = "Date"
+    tr.appendChild(document.createElement("th")).innerText = "Type"
+    tr.appendChild(document.createElement("th")).innerText = "Safety"
+    tr.appendChild(document.createElement("th")).innerText = "Emissions"
+    tr.appendChild(document.createElement("th")).innerText = "Facility"
+    tr.appendChild(document.createElement("th")).innerText = "Odometer"
+    tr.appendChild(document.createElement("th")).innerText = "Expires"
+    tr.appendChild(document.createElement("th")).innerText = "Certificate #"
+    tr.appendChild(document.createElement("th")).innerText = "Notes"
+
+    const tbody = table.appendChild(document.createElement("tbody"))
+    records.forEach(row => {
+        const dataRow = tbody.appendChild(document.createElement("tr"))
+        dataRow.appendChild(document.createElement("td")).innerText = formatDate(row.inspection_date)
+        dataRow.appendChild(document.createElement("td")).innerText = row.inspection_type || "—"
+
+        const safetyCell = dataRow.appendChild(document.createElement("td"))
+        safetyCell.appendChild(resultBadge(row.safety_inspection_result))
+
+        const emissionsCell = dataRow.appendChild(document.createElement("td"))
+        const emissionsResult = row.overall_readiness_result || row.initial_emission_result
+        if (emissionsResult) {
+            emissionsCell.appendChild(resultBadge(emissionsResult))
+            if (row.emissions_waiver_issued === "YES") {
+                const waiver = emissionsCell.appendChild(document.createElement("span"))
+                waiver.className = "text-muted ms-1"
+                waiver.innerText = "(waiver)"
+            }
+        } else {
+            emissionsCell.innerText = "—"
+        }
+
+        dataRow.appendChild(document.createElement("td")).innerText = facilityLabel(facilityLookup[row.dmv_facility_number], row.dmv_facility_number)
+
+        const odometerValue = Number(row.odometer_reading)
+        dataRow.appendChild(document.createElement("td")).innerText = Number.isFinite(odometerValue) && row.odometer_reading ? odometerValue.toLocaleString() : "—"
+
+        dataRow.appendChild(document.createElement("td")).innerText = formatDate(row.inspection_expiration)
+
+        const certCell = dataRow.appendChild(document.createElement("td"))
+        certCell.className = "font-monospace"
+        certCell.innerText = row.inspection_certificate_number || "—"
+
+        const notes = []
+        if (row.warning_message && row.warning_message !== "NONE") {
+            notes.push(row.warning_message)
+        }
+        if (row.advisory_message && row.advisory_message !== "NONE") {
+            notes.push(row.advisory_message)
+        }
+        dataRow.appendChild(document.createElement("td")).innerText = notes.length ? notes.join("; ") : "—"
+    })
+    container.appendChild(table)
+}
+
+function queryVinHistory(vinValue, updateHistory = true) {
+    const normalizedVIN = normalizeVIN(vinValue)
+    if (!normalizedVIN) {
+        vinInput.classList.add("is-invalid")
+        vinInput.focus()
+        return
+    }
+
+    vinInput.value = normalizedVIN
+    vinInput.classList.remove("is-invalid")
+
+    if (updateHistory) {
+        const qs = new URLSearchParams()
+        qs.set("vin", normalizedVIN)
+        history.pushState(null, document.title, window.location.pathname + "?" + qs.toString())
+    }
+
+    reportContainer.innerHTML = ''
+    const el = document.createElement("div")
+    el.className = "col-12 mt-4 mb-2 py-2 bg-white"
+    reportContainer.appendChild(el)
+    const heading = document.createElement("h2")
+    heading.innerText = `Inspection history for ${normalizedVIN}`
+    el.appendChild(heading)
+
+    const spinner = document.createElement("div")
+    spinner.className = "spinner-border m-5"
+    spinner.setAttribute("role", "status")
+    spinner.setAttribute("aria-label", "Searching DMV inspection records")
+    el.appendChild(spinner)
+
+    getInspections(normalizedVIN)
+    .then(inspections => {
+        return getFacilities(inspections.map(row => row.dmv_facility_number))
+            .then(facilityLookup => ({inspections, facilityLookup}))
+    })
+    .then(({inspections, facilityLookup}) => {
+        spinner.remove()
+        renderInspections(el, inspections, facilityLookup, normalizedVIN)
+    })
+    .catch(err => {
+        spinner.remove()
+        console.error(err)
+        const alertBox = document.createElement("div")
+        alertBox.className = "alert alert-danger"
+        alertBox.innerText = "Unable to fetch VIN inspection data right now. Please try again."
+        el.appendChild(alertBox)
+    })
+}
+
+function bootstrap() {
+    const params = new URLSearchParams(window.location.search)
+    const presetVIN = normalizeVIN(params.get("vin"))
+    if (presetVIN) {
+        vinInput.value = presetVIN
+        queryVinHistory(presetVIN, false)
+    }
+}
+
+function handleSearch(updateHistory = true) {
+    queryVinHistory(vinInput.value, updateHistory)
+}
+
+queryButton.addEventListener("click", () => handleSearch(true))
+vinInput.addEventListener("keyup", (event) => {
+    if (event.key === "Enter") {
+        handleSearch(true)
+    }
+})
+vinInput.addEventListener("input", () => {
+    vinInput.classList.remove("is-invalid")
+})
+
+bootstrap()
+
+</script>
+</body>
+</html>
