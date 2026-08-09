@@ -209,6 +209,15 @@ function getFacilities(facilityNumbers) {
     if (unique.length === 0) {
         return Promise.resolve({})
     }
+    
+    // Hardcoded facilities
+    const hardcoded = {
+        "7098060": {
+            facility: "7098060",
+            facility_name: "NYC T&LC Inspection",
+        }
+    }
+    
     const inList = unique.map(f => "'" + String(f).replace(/'/g, "") + "'").join(",")
     const params = new URLSearchParams({
         "$select": "facility,facility_name,facility_name_overflow,facility_street,facility_city,facility_state,facility_zip_code",
@@ -218,7 +227,7 @@ function getFacilities(facilityNumbers) {
     return fetch(`${FACILITY_DATASET_BASE}?${params.toString()}`)
         .then(response => response.json())
         .then(records => {
-            const lookup = {}
+            const lookup = {...hardcoded}
             records.forEach(rec => { lookup[rec.facility] = rec })
             return lookup
         })
