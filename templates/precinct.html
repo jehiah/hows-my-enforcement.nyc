@@ -141,8 +141,8 @@ const dtFormat = new Intl.DateTimeFormat("en-US");
 
 function getData(query) {
     return Promise.all([
-        fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2026"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
-        fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2025"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
+        fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2027"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
+        fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2026"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
     ]).then(results => {
         const d1 = d3.csvParse(results[0])
         const d2 = d3.csvParse(results[1])

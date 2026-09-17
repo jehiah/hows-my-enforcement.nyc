@@ -213,7 +213,7 @@ import {FYLookup} from "./static/fy_lookup.js"
 import {ViolationCodes, NonParkingViolations, AgencyLookup} from "./static/data.js"
 
 const parseDate = d3.utcParse("%Y-%m-%d")
-const FY = FYLookup["FY2026"]
+const FY = FYLookup["FY2027"]
 
 const dtFormat = new Intl.DateTimeFormat("en-US")
 const dtFormatDateTime = new Intl.DateTimeFormat("en-US", {
@@ -313,8 +313,8 @@ function getParkingData(plate, state) {
     ]
     const query = `&$where=${filters.join(" AND ")}`
     return Promise.all([
-        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2026"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`),
-        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2025"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`)
+        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2027"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`),
+        fetch(`https://data.cityofnewyork.us/resource/${FYLookup["FY2026"].dataset}.csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000${query}`)
     ])
     .then(results => Promise.all(results.map(r => r.text())))
     .then(([current, prior]) => {

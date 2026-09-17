@@ -1,5 +1,5 @@
 
-echo "querying FY 2026 data stats"
+echo "querying FY 2027 data stats"
 DATASET=pvqr-7yc4
 # curl 'https://data.cityofnewyork.us/resource/pvqr-7yc4.json?$select=issuing_agency,issue_date,count(*)+as+number_violations&$where=issuing_agency+in+('T','P','S')&$group=issuing_agency,issue_date&$having=number_violations+>+50&$limit=2000' > temp.json
 
@@ -15,7 +15,7 @@ jq -c '[.[] | select(.issuing_agency=="S")][-1]' temp.json
 
 END_DATE=$(jq -r -c '[.[] | select(.issuing_agency=="P")][-1] | .issue_date' temp.json | awk -FT '{print $1}') # YYYY-mm-dd
 START_DATE=$(date -j -v -11m -f %Y-%m-%d ${END_DATE} +%Y-%m-01)
-DATASET_PREVIOUS="869v-vr48"
+DATASET_PREVIOUS="9mwx-gamw"
 
 echo "fetching precinct stats from ${DATASET}, ${DATASET_PREVIOUS} - ${START_DATE} - ${END_DATE}"
 set -o pipefail

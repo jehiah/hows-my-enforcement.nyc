@@ -3,14 +3,19 @@ function parseDate(dateString) {
 }
 
 export const FYLookup = {
-    "FY2026": {
+    "FY2027": {
         "dataset": "pvqr-7yc4",
-        "start": parseDate("2025-07-01"),
+        "start": parseDate("2026-07-01"),
         "end": {
-            "P": parseDate("2026-06-17"),
-            "T": parseDate("2026-06-25"),
-            "S": parseDate("2026-06-29")
+            "P": parseDate("2026-07-21"),
+            "T": parseDate("2026-07-28"),
+            "S": parseDate("2026-07-30")
         }
+    },
+    "FY2026": {
+        "dataset": "9mwx-gamw",
+        "start": parseDate("2025-07-01"),
+        "end": parseDate("2026-07-01"),
     },
     "FY2025": {
         "dataset": "m5vz-tzqv",
