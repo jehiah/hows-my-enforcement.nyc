@@ -201,9 +201,8 @@ function queryNYCOpenData(precinct) {
     filters.push(`violation_precinct = ${precinct}`)
     displayFilters.push(`violation_precinct = ${precinct}`)
     if (issuingAgency == 'P') {
-        // use P or N; some manual entries seem to now be under N but are still police department
-        // filters.push(`(issuing_agency = 'P' OR issuing_agency = 'N')`)
-        displayFilters.push(`issuing_agency = 'P' OR issuing_agency = 'N'`)
+        filters.push(`issuing_agency = 'P'`)
+        displayFilters.push(`issuing_agency='${issuingAgency}' // ${AgencyLookup[issuingAgency]}`)
     } else {
         // filters.push(`issuing_agency='${issuingAgency}'`)
         displayFilters.push(`issuing_agency='${issuingAgency}' // ${AgencyLookup[issuingAgency]}`)
