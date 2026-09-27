@@ -132,19 +132,20 @@
 // dayjs.extend(utc)
 import FYCalendar from "./static/fy_calendar.js"
 import Punchcard from "./static/punchcard.js"
-import {FYLookup} from "./static/fy_lookup.js"
+import {FYCurrent, FYPrevious, FYLookup} from "./static/fy_lookup.js"
 import {ViolationCodes, NonParkingViolations, AgencyLookup} from "./static/data.js"
 
-const FY = FYLookup["FY2026"]
+const FY = FYLookup[FYCurrent]
 
 const dtFormat = new Intl.DateTimeFormat("en-US");
 
 function getData(query) {
     return Promise.all([
-        fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2027"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
-        fetch("https://data.cityofnewyork.us/resource/"+FYLookup["FY2026"].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
-    ]).then(results => {
-        const d1 = d3.csvParse(results[0])
+        fetch("https://data.cityofnewyork.us/resource/"+FYLookup[FYCurrent].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query),
+        fetch("https://data.cityofnewyork.us/resource/"+FYLookup[FYPrevious].dataset+".csv?$select=plate_id,registration_state,violation_code,issuing_agency,issue_date,street_name,house_number,intersecting_street,violation_time,summons_number&$limit=100000"+query)
+    ]).then(results => Promise.all(results.map(r => r.text())))
+    .then(results => {
+        const d1 = d3.csvParse(results[0])    
         const d2 = d3.csvParse(results[1])
         d1.push(...d2)
         return d1

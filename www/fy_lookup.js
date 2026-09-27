@@ -1,7 +1,8 @@
 function parseDate(dateString) {
     return new Date(dateString + " UTC");
 }
-
+export const FYCurrent = "FY2027"
+export const FYPrevious = "FY2026"
 export const FYLookup = {
     "FY2027": {
         "dataset": "pvqr-7yc4",
